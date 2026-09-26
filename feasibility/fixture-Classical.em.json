@@ -1,0 +1,166 @@
+{
+  "id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+  "status": 200,
+  "latency": 0.907,
+  "bytes": 22908,
+  "name": "Classical.em",
+  "kind": "theorem",
+  "paper_external_id": "Mathlib_v427",
+  "body_present": true,
+  "nodes": {
+    "0ad871d8-1fd7-428d-a021-535e2a85ddc0": "rfl",
+    "0b5fbef6-e46d-44e5-baad-8a3e9bb05a66": "Or.inl",
+    "24429694-bfba-471f-8323-65376ba97978": "Classical.choose_spec",
+    "27ebeb2b-5299-48aa-a930-cc333477423a": "of_eq_true",
+    "32b8f9ef-56ef-47a3-b753-a74406b6eeb4": "funext",
+    "3f77b6d8-0fb5-474f-900e-6ba678a911b6": "congr",
+    "46f9bdf2-6f17-43d0-9009-8485b2479ea2": "Classical.em",
+    "4dd171c4-a023-4241-8a6c-33cfdb9c3247": "Ne",
+    "507e9757-758c-4e8a-b2b2-9e9562180d97": "Eq.trans",
+    "658d15bb-1ee1-4762-8968-3256fa8d3d06": "iff_false",
+    "8148b737-82d4-438e-8bb9-871d387aac59": "Eq.refl",
+    "85de6cca-8eb8-4dad-a8b0-5176d88271b5": "propext",
+    "905832db-8506-449a-a15f-3d1281d55336": "Not",
+    "91444e9b-c70a-4680-9947-62da403b2b9f": "id",
+    "9b228a2a-439e-42a6-82f4-9d72749613ac": "Or.inr",
+    "a4a1cb14-cde9-4fc3-a03d-f3b8bc3eb537": "not_false_eq_true",
+    "c11accd1-bb33-4318-acd3-5e240ce167a3": "Iff.intro",
+    "c2d9b29a-4962-4a26-9c53-a6cdc2840a7f": "eq_iff_iff",
+    "c6a84802-5fc3-40cc-83b6-99e693ab4ba4": "not_true_eq_false",
+    "ca829fee-4857-4d39-bdbb-71b72e3e0e18": "congrArg",
+    "e6a1e3a7-b500-4d3e-a697-e33b67752dc6": "Exists.intro",
+    "e862888b-e82a-4b84-8e08-6aff16e87c76": "Or",
+    "eab51993-2931-45fd-8967-3d4d43eafa7b": "Eq.mpr",
+    "f290dd3e-a40f-449c-a15a-8553f2719f1f": "mt",
+    "fb31ca82-2952-45e0-8e10-83defc74936e": "Classical.choose"
+  },
+  "direct_edges": [
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "0ad871d8-1fd7-428d-a021-535e2a85ddc0",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "0b5fbef6-e46d-44e5-baad-8a3e9bb05a66",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "24429694-bfba-471f-8323-65376ba97978",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "27ebeb2b-5299-48aa-a930-cc333477423a",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "32b8f9ef-56ef-47a3-b753-a74406b6eeb4",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "3f77b6d8-0fb5-474f-900e-6ba678a911b6",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "4dd171c4-a023-4241-8a6c-33cfdb9c3247",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "507e9757-758c-4e8a-b2b2-9e9562180d97",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "658d15bb-1ee1-4762-8968-3256fa8d3d06",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "8148b737-82d4-438e-8bb9-871d387aac59",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "85de6cca-8eb8-4dad-a8b0-5176d88271b5",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "905832db-8506-449a-a15f-3d1281d55336",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "905832db-8506-449a-a15f-3d1281d55336",
+      "edge_type": "sig"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "91444e9b-c70a-4680-9947-62da403b2b9f",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "9b228a2a-439e-42a6-82f4-9d72749613ac",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "a4a1cb14-cde9-4fc3-a03d-f3b8bc3eb537",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "c11accd1-bb33-4318-acd3-5e240ce167a3",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "c2d9b29a-4962-4a26-9c53-a6cdc2840a7f",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "c6a84802-5fc3-40cc-83b6-99e693ab4ba4",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "ca829fee-4857-4d39-bdbb-71b72e3e0e18",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "e6a1e3a7-b500-4d3e-a697-e33b67752dc6",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "e862888b-e82a-4b84-8e08-6aff16e87c76",
+      "edge_type": "sig"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "eab51993-2931-45fd-8967-3d4d43eafa7b",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "f290dd3e-a40f-449c-a15a-8553f2719f1f",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "dep_id": "fb31ca82-2952-45e0-8e10-83defc74936e",
+      "edge_type": "proof"
+    }
+  ],
+  "missing_names": [],
+  "response_edge_count": 123
+}

@@ -1,0 +1,613 @@
+{
+  "source": "https://api.theoremsearch.com",
+  "date": "2026-09-25T20:47:16Z",
+  "parameters": {
+    "max_nodes_per_root": 80,
+    "max_seconds_per_root": 50,
+    "workers": 3
+  },
+  "results": [
+    {
+      "root_id": "5dd9fd70-1bd4-4d7f-be72-a45b65a05bc5",
+      "root_name": "Nat.add_zero",
+      "stop_reason": "complete",
+      "elapsed_seconds": 2.275,
+      "network_requests": 5,
+      "network_response_bytes": 17494,
+      "median_request_seconds": 0.736,
+      "fetched_nodes": 5,
+      "discovered_nodes": 5,
+      "pending_nodes": 0,
+      "levels": [
+        {
+          "distance": 0,
+          "nodes_fetched": 1,
+          "proof_children_discovered": 4,
+          "sample_fetched_names": [
+            "Nat.add_zero"
+          ]
+        },
+        {
+          "distance": 1,
+          "nodes_fetched": 4,
+          "proof_children_discovered": 0,
+          "sample_fetched_names": [
+            "rfl",
+            "instOfNatNat",
+            "instAddNat",
+            "instHAdd"
+          ]
+        }
+      ],
+      "errors": [],
+      "hits": [],
+      "direct_edges": {
+        "proof": 4,
+        "sig": 5
+      },
+      "root_body_present": true
+    },
+    {
+      "root_id": "23cea27e-8254-4e41-96dd-57f732be6402",
+      "root_name": "Nat.zero_add",
+      "stop_reason": "complete",
+      "elapsed_seconds": 3.33,
+      "network_requests": 8,
+      "network_response_bytes": 24445,
+      "median_request_seconds": 0.816,
+      "fetched_nodes": 12,
+      "discovered_nodes": 12,
+      "pending_nodes": 0,
+      "levels": [
+        {
+          "distance": 0,
+          "nodes_fetched": 1,
+          "proof_children_discovered": 11,
+          "sample_fetched_names": [
+            "Nat.zero_add"
+          ]
+        },
+        {
+          "distance": 1,
+          "nodes_fetched": 11,
+          "proof_children_discovered": 0,
+          "sample_fetched_names": [
+            "rfl",
+            "Unit.unit",
+            "PUnit.unit",
+            "instOfNatNat",
+            "Nat.zero",
+            "instAddNat",
+            "Nat.succ",
+            "instHAdd",
+            "Nat.add",
+            "congrArg"
+          ]
+        }
+      ],
+      "errors": [],
+      "hits": [],
+      "direct_edges": {
+        "proof": 11,
+        "sig": 5
+      },
+      "root_body_present": true
+    },
+    {
+      "root_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "root_name": "Nat.add_comm",
+      "stop_reason": "complete",
+      "elapsed_seconds": 2.193,
+      "network_requests": 5,
+      "network_response_bytes": 51372,
+      "median_request_seconds": 0.694,
+      "fetched_nodes": 17,
+      "discovered_nodes": 17,
+      "pending_nodes": 0,
+      "levels": [
+        {
+          "distance": 0,
+          "nodes_fetched": 1,
+          "proof_children_discovered": 12,
+          "sample_fetched_names": [
+            "Nat.add_comm"
+          ]
+        },
+        {
+          "distance": 1,
+          "nodes_fetched": 12,
+          "proof_children_discovered": 4,
+          "sample_fetched_names": [
+            "Nat.zero_add",
+            "PUnit.unit",
+            "Nat.succ_add",
+            "instOfNatNat",
+            "Nat.zero",
+            "instAddNat",
+            "id",
+            "Nat.succ",
+            "instHAdd",
+            "congrArg"
+          ]
+        },
+        {
+          "distance": 2,
+          "nodes_fetched": 4,
+          "proof_children_discovered": 0,
+          "sample_fetched_names": [
+            "rfl",
+            "Unit.unit",
+            "Nat.add",
+            "Unit"
+          ]
+        }
+      ],
+      "errors": [],
+      "hits": [
+        {
+          "target": "Nat.succ_add",
+          "distance": 1,
+          "path": [
+            {
+              "id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+              "name": "Nat.add_comm"
+            },
+            {
+              "id": "49658b0e-94fb-48a9-9d43-a0796a0c7363",
+              "name": "Nat.succ_add"
+            }
+          ]
+        },
+        {
+          "target": "Nat.zero_add",
+          "distance": 1,
+          "path": [
+            {
+              "id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+              "name": "Nat.add_comm"
+            },
+            {
+              "id": "23cea27e-8254-4e41-96dd-57f732be6402",
+              "name": "Nat.zero_add"
+            }
+          ]
+        }
+      ],
+      "direct_edges": {
+        "proof": 12,
+        "sig": 4
+      },
+      "root_body_present": true
+    },
+    {
+      "root_id": "2bc6b0da-d7c1-4270-b311-b7ea83e96caf",
+      "root_name": "Nat.eq_zero_of_add_eq_zero",
+      "stop_reason": "complete",
+      "elapsed_seconds": 2.818,
+      "network_requests": 8,
+      "network_response_bytes": 42519,
+      "median_request_seconds": 0.702,
+      "fetched_nodes": 19,
+      "discovered_nodes": 19,
+      "pending_nodes": 0,
+      "levels": [
+        {
+          "distance": 0,
+          "nodes_fetched": 1,
+          "proof_children_discovered": 12,
+          "sample_fetched_names": [
+            "Nat.eq_zero_of_add_eq_zero"
+          ]
+        },
+        {
+          "distance": 1,
+          "nodes_fetched": 12,
+          "proof_children_discovered": 6,
+          "sample_fetched_names": [
+            "rfl",
+            "And.intro",
+            "instOfNatNat",
+            "Nat.zero",
+            "instAddNat",
+            "Eq.refl",
+            "noConfusion_of_Nat",
+            "Nat.succ",
+            "instHAdd",
+            "Nat.add"
+          ]
+        },
+        {
+          "distance": 2,
+          "nodes_fetched": 6,
+          "proof_children_discovered": 0,
+          "sample_fetched_names": [
+            "Unit.unit",
+            "PUnit.unit",
+            "congrArg",
+            "Nat.beq",
+            "Unit",
+            "True.intro"
+          ]
+        }
+      ],
+      "errors": [],
+      "hits": [
+        {
+          "target": "False.elim",
+          "distance": 1,
+          "path": [
+            {
+              "id": "2bc6b0da-d7c1-4270-b311-b7ea83e96caf",
+              "name": "Nat.eq_zero_of_add_eq_zero"
+            },
+            {
+              "id": "e06a1b78-d2ff-4d7f-acf8-dff248d54a92",
+              "name": "False.elim"
+            }
+          ]
+        }
+      ],
+      "direct_edges": {
+        "proof": 12,
+        "sig": 6
+      },
+      "root_body_present": true
+    },
+    {
+      "root_id": "66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8",
+      "root_name": "Nat.add_eq_zero",
+      "stop_reason": "node_budget",
+      "elapsed_seconds": 17.622,
+      "network_requests": 64,
+      "network_response_bytes": 459682,
+      "median_request_seconds": 0.723,
+      "fetched_nodes": 80,
+      "discovered_nodes": 94,
+      "pending_nodes": 14,
+      "levels": [
+        {
+          "distance": 0,
+          "nodes_fetched": 1,
+          "proof_children_discovered": 39,
+          "sample_fetched_names": [
+            "Nat.add_eq_zero"
+          ]
+        },
+        {
+          "distance": 1,
+          "nodes_fetched": 39,
+          "proof_children_discovered": 20,
+          "sample_fetched_names": [
+            "Classical.propDecidable",
+            "Int.instSub",
+            "instDecidableIff",
+            "Int.instNegInt",
+            "Int.add_one_le_of_lt",
+            "Option.some",
+            "instDecidableEqBool",
+            "Eq.trans",
+            "Nat.lt_or_gt_of_ne",
+            "Int.sub_nonneg_of_le"
+          ]
+        },
+        {
+          "distance": 2,
+          "nodes_fetched": 20,
+          "proof_children_discovered": 9,
+          "sample_fetched_names": [
+            "Int.instLTInt",
+            "Or.inl",
+            "Ne",
+            "Nat.lt_trichotomy",
+            "Or.inr",
+            "False.elim",
+            "Int.add_le_add_right",
+            "Eq.mp",
+            "Int.add_right_neg",
+            "congrArg"
+          ]
+        },
+        {
+          "distance": 3,
+          "nodes_fetched": 9,
+          "proof_children_discovered": 20,
+          "sample_fetched_names": [
+            "Nat.lt_or_ge",
+            "GE.ge",
+            "instLENat",
+            "Nat.eq_or_lt_of_le",
+            "Int.add_comm",
+            "Int.add_le_add_left",
+            "Int.add_left_neg",
+            "Int.sub_eq_add_neg",
+            "Bool.false"
+          ]
+        },
+        {
+          "distance": 4,
+          "nodes_fetched": 11,
+          "proof_children_discovered": 5,
+          "sample_fetched_names": [
+            "Nat.zero_le",
+            "Unit.unit",
+            "PUnit.unit",
+            "Nat.le_succ_of_le",
+            "Nat.zero",
+            "Nat.succ",
+            "Unit",
+            "Nat.le_refl",
+            "of_eq_true",
+            "Nat.add_comm"
+          ]
+        }
+      ],
+      "errors": [],
+      "hits": [
+        {
+          "target": "Classical.propDecidable",
+          "distance": 1,
+          "path": [
+            {
+              "id": "66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8",
+              "name": "Nat.add_eq_zero"
+            },
+            {
+              "id": "062941d4-a580-486a-91b3-6bae7498558e",
+              "name": "Classical.propDecidable"
+            }
+          ]
+        },
+        {
+          "target": "Decidable.byContradiction",
+          "distance": 1,
+          "path": [
+            {
+              "id": "66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8",
+              "name": "Nat.add_eq_zero"
+            },
+            {
+              "id": "6d09e279-21d9-4d83-a4f7-a2051c107ea7",
+              "name": "Decidable.byContradiction"
+            }
+          ]
+        },
+        {
+          "target": "False.elim",
+          "distance": 2,
+          "path": [
+            {
+              "id": "66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8",
+              "name": "Nat.add_eq_zero"
+            },
+            {
+              "id": "519b482b-2b7d-411e-b78a-767aa1f7c726",
+              "name": "Nat.lt_or_gt_of_ne"
+            },
+            {
+              "id": "e06a1b78-d2ff-4d7f-acf8-dff248d54a92",
+              "name": "False.elim"
+            }
+          ]
+        },
+        {
+          "target": "propext",
+          "distance": 4,
+          "path": [
+            {
+              "id": "66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8",
+              "name": "Nat.add_eq_zero"
+            },
+            {
+              "id": "556d2fd1-ff55-4ee8-a959-0510dc5a948e",
+              "name": "Int.sub_nonneg_of_le"
+            },
+            {
+              "id": "9d2fcf64-3364-480a-bc87-3bb908604853",
+              "name": "Int.add_right_neg"
+            },
+            {
+              "id": "4848803c-96dd-44b0-a65a-616eb027b95a",
+              "name": "Int.add_left_neg"
+            },
+            {
+              "id": "85de6cca-8eb8-4dad-a8b0-5176d88271b5",
+              "name": "propext"
+            }
+          ]
+        },
+        {
+          "target": "Nat.succ_add",
+          "distance": 5,
+          "path": [
+            {
+              "id": "66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8",
+              "name": "Nat.add_eq_zero"
+            },
+            {
+              "id": "556d2fd1-ff55-4ee8-a959-0510dc5a948e",
+              "name": "Int.sub_nonneg_of_le"
+            },
+            {
+              "id": "4d08051e-5190-4ef8-9ae8-6318d664d4a7",
+              "name": "Int.add_le_add_right"
+            },
+            {
+              "id": "49454e18-1b63-4bfb-baf0-7260a0dcc513",
+              "name": "Int.add_comm"
+            },
+            {
+              "id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+              "name": "Nat.add_comm"
+            },
+            {
+              "id": "49658b0e-94fb-48a9-9d43-a0796a0c7363",
+              "name": "Nat.succ_add"
+            }
+          ]
+        },
+        {
+          "target": "Nat.zero_add",
+          "distance": 5,
+          "path": [
+            {
+              "id": "66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8",
+              "name": "Nat.add_eq_zero"
+            },
+            {
+              "id": "556d2fd1-ff55-4ee8-a959-0510dc5a948e",
+              "name": "Int.sub_nonneg_of_le"
+            },
+            {
+              "id": "4d08051e-5190-4ef8-9ae8-6318d664d4a7",
+              "name": "Int.add_le_add_right"
+            },
+            {
+              "id": "49454e18-1b63-4bfb-baf0-7260a0dcc513",
+              "name": "Int.add_comm"
+            },
+            {
+              "id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+              "name": "Nat.add_comm"
+            },
+            {
+              "id": "23cea27e-8254-4e41-96dd-57f732be6402",
+              "name": "Nat.zero_add"
+            }
+          ]
+        }
+      ],
+      "direct_edges": {
+        "proof": 39,
+        "sig": 7
+      },
+      "root_body_present": true
+    },
+    {
+      "root_id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+      "root_name": "Classical.em",
+      "stop_reason": "complete",
+      "elapsed_seconds": 9.473,
+      "network_requests": 27,
+      "network_response_bytes": 150347,
+      "median_request_seconds": 0.755,
+      "fetched_nodes": 51,
+      "discovered_nodes": 51,
+      "pending_nodes": 0,
+      "levels": [
+        {
+          "distance": 0,
+          "nodes_fetched": 1,
+          "proof_children_discovered": 23,
+          "sample_fetched_names": [
+            "Classical.em"
+          ]
+        },
+        {
+          "distance": 1,
+          "nodes_fetched": 23,
+          "proof_children_discovered": 17,
+          "sample_fetched_names": [
+            "rfl",
+            "Or.inl",
+            "Classical.choose_spec",
+            "of_eq_true",
+            "funext",
+            "congr",
+            "Ne",
+            "Eq.trans",
+            "iff_false",
+            "Eq.refl"
+          ]
+        },
+        {
+          "distance": 2,
+          "nodes_fetched": 17,
+          "proof_children_discovered": 7,
+          "sample_fetched_names": [
+            "Classical.indefiniteDescription",
+            "trivial",
+            "Eq.symm",
+            "Quot.liftOn",
+            "Quot.sound",
+            "False.elim",
+            "eq_true",
+            "iff_iff_eq",
+            "Iff.symm",
+            "instDecidableIff"
+          ]
+        },
+        {
+          "distance": 3,
+          "nodes_fetched": 7,
+          "proof_children_discovered": 2,
+          "sample_fetched_names": [
+            "True.intro",
+            "Iff.of_eq",
+            "decide_eq_false",
+            "absurd",
+            "ne_true_of_eq_false",
+            "Decidable.isTrue",
+            "Decidable.isFalse"
+          ]
+        },
+        {
+          "distance": 4,
+          "nodes_fetched": 2,
+          "proof_children_discovered": 1,
+          "sample_fetched_names": [
+            "Iff.rfl",
+            "Bool.false"
+          ]
+        },
+        {
+          "distance": 5,
+          "nodes_fetched": 1,
+          "proof_children_discovered": 0,
+          "sample_fetched_names": [
+            "Iff.refl"
+          ]
+        }
+      ],
+      "errors": [],
+      "hits": [
+        {
+          "target": "propext",
+          "distance": 1,
+          "path": [
+            {
+              "id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+              "name": "Classical.em"
+            },
+            {
+              "id": "85de6cca-8eb8-4dad-a8b0-5176d88271b5",
+              "name": "propext"
+            }
+          ]
+        },
+        {
+          "target": "False.elim",
+          "distance": 2,
+          "path": [
+            {
+              "id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+              "name": "Classical.em"
+            },
+            {
+              "id": "658d15bb-1ee1-4762-8968-3256fa8d3d06",
+              "name": "iff_false"
+            },
+            {
+              "id": "e06a1b78-d2ff-4d7f-acf8-dff248d54a92",
+              "name": "False.elim"
+            }
+          ]
+        }
+      ],
+      "direct_edges": {
+        "proof": 23,
+        "sig": 2
+      },
+      "root_body_present": true
+    }
+  ]
+}

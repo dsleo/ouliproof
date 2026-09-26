@@ -1,0 +1,8 @@
+Lean 4.28.0 (commit 7e01a1bf5c70fc6167d49c345d3bf80596e9a79b)
+
+'Nat.add_zero' does not depend on any axioms
+'Nat.zero_add' does not depend on any axioms
+'Nat.add_comm' does not depend on any axioms
+'Nat.eq_zero_of_add_eq_zero' does not depend on any axioms
+'Nat.add_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Classical.em' depends on axioms: [propext, Classical.choice, Quot.sound]

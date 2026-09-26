@@ -1,0 +1,111 @@
+{
+  "id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+  "status": 200,
+  "latency": 0.82,
+  "bytes": 14396,
+  "name": "Nat.add_comm",
+  "kind": "theorem",
+  "paper_external_id": "Mathlib_v427",
+  "body_present": true,
+  "nodes": {
+    "23cea27e-8254-4e41-96dd-57f732be6402": "Nat.zero_add",
+    "29282c48-7d1e-424a-a0ae-d5160c4fab04": "PUnit.unit",
+    "49658b0e-94fb-48a9-9d43-a0796a0c7363": "Nat.succ_add",
+    "5546ccb4-5beb-4176-807a-cc42f622aa33": "Nat.add_comm",
+    "6def1bfc-bedb-4aea-996d-25b6b8f93c78": "instOfNatNat",
+    "6def8eff-b5f6-4ca0-9b98-ba0be7ee5ef5": "Nat.zero",
+    "77d17a61-2552-440d-b199-7fe4ffed2482": "instAddNat",
+    "91444e9b-c70a-4680-9947-62da403b2b9f": "id",
+    "9f13d13c-310c-438c-9bdf-ff57249b5eb8": "Nat.succ",
+    "a866e746-46cb-4a19-831b-8d6f60a62876": "instHAdd",
+    "ca829fee-4857-4d39-bdbb-71b72e3e0e18": "congrArg",
+    "e16bd660-67b9-4392-b08d-fde513888f6a": "Eq.symm",
+    "eab51993-2931-45fd-8967-3d4d43eafa7b": "Eq.mpr",
+    "ef3f44d9-4294-48ee-a1eb-f1ecc5db1e36": "Eq",
+    "f1c30d09-5507-4a7e-9e3c-b00632800fdb": "Nat"
+  },
+  "direct_edges": [
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "23cea27e-8254-4e41-96dd-57f732be6402",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "29282c48-7d1e-424a-a0ae-d5160c4fab04",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "49658b0e-94fb-48a9-9d43-a0796a0c7363",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "6def1bfc-bedb-4aea-996d-25b6b8f93c78",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "6def8eff-b5f6-4ca0-9b98-ba0be7ee5ef5",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "77d17a61-2552-440d-b199-7fe4ffed2482",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "77d17a61-2552-440d-b199-7fe4ffed2482",
+      "edge_type": "sig"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "91444e9b-c70a-4680-9947-62da403b2b9f",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "9f13d13c-310c-438c-9bdf-ff57249b5eb8",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "a866e746-46cb-4a19-831b-8d6f60a62876",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "a866e746-46cb-4a19-831b-8d6f60a62876",
+      "edge_type": "sig"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "ca829fee-4857-4d39-bdbb-71b72e3e0e18",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "e16bd660-67b9-4392-b08d-fde513888f6a",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "eab51993-2931-45fd-8967-3d4d43eafa7b",
+      "edge_type": "proof"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "ef3f44d9-4294-48ee-a1eb-f1ecc5db1e36",
+      "edge_type": "sig"
+    },
+    {
+      "src_id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+      "dep_id": "f1c30d09-5507-4a7e-9e3c-b00632800fdb",
+      "edge_type": "sig"
+    }
+  ],
+  "missing_names": [],
+  "response_edge_count": 76
+}

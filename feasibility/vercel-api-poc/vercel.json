@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/tg/graph/embedding",
+      "destination": "https://api.theoremsearch.com/graph/embedding"
+    },
+    {
+      "source": "/tg/graph/statement/:id",
+      "destination": "https://api.theoremsearch.com/graph/statement/:id"
+    }
+  ]
+}

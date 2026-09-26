@@ -1,0 +1,432 @@
+{
+  "date": "2026-09-25T20:59:59Z",
+  "endpoint": "https://api.theoremsearch.com/graph/embedding",
+  "results": [
+    {
+      "query": "Nat.add_comm",
+      "target": "Nat.add_comm",
+      "http_status": 200,
+      "elapsed_seconds": 1.76,
+      "target_rank": 7,
+      "result_count": 10,
+      "unique_ids": 9,
+      "results": [
+        {
+          "id": "0d06d2af-9329-4056-949b-097c5776413e",
+          "name_field": "Thm",
+          "source_title": "ClassFieldTheory",
+          "score": 0.7625240808219517
+        },
+        {
+          "id": "3ed0f0c3-7f4d-4356-a1ad-9f60c1fbfd32",
+          "name_field": "Inst",
+          "source_title": "Mathlib_v427",
+          "score": 0.7621668264667056
+        },
+        {
+          "id": "03d63535-8ea8-4175-a802-466ee8a6e140",
+          "name_field": "Thm",
+          "source_title": "Mathlib_v427",
+          "score": 0.7511232346966144
+        },
+        {
+          "id": "c43d1152-8e0e-44ea-a2fc-1628a86990ee",
+          "name_field": "Inst",
+          "source_title": "Mathlib_v427",
+          "score": 0.747629493757552
+        },
+        {
+          "id": "445ac08e-13b0-4cae-b88a-273ba87c8c51",
+          "name_field": "Thm",
+          "source_title": "Mathlib_v427",
+          "score": 0.7345932917018868
+        },
+        {
+          "id": "3ed0f0c3-7f4d-4356-a1ad-9f60c1fbfd32",
+          "name_field": "Inst",
+          "source_title": "Mathlib_v427",
+          "score": 0.732543270639364
+        },
+        {
+          "id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.7316736302764908
+        },
+        {
+          "id": "0d59a4e5-c247-475d-8dbe-47dae959bd1c",
+          "name_field": "Inst",
+          "source_title": "Mathlib_v427",
+          "score": 0.7295226615951975
+        },
+        {
+          "id": "e53968a9-b267-409b-aa63-d69d5118d499",
+          "name_field": "Inst",
+          "source_title": "Mathlib_v427",
+          "score": 0.7285080426127356
+        },
+        {
+          "id": "904e052b-9f81-4ba6-b378-bcedde9b1a42",
+          "name_field": "Class",
+          "source_title": "Mathlib_v427",
+          "score": 0.7275785532500136
+        }
+      ]
+    },
+    {
+      "query": "for all natural numbers a and b, a + b = b + a",
+      "target": "Nat.add_comm",
+      "http_status": 200,
+      "elapsed_seconds": 5.729,
+      "target_rank": 4,
+      "result_count": 10,
+      "unique_ids": 8,
+      "results": [
+        {
+          "id": "a7297496-a022-44cc-a484-757a60592a78",
+          "name_field": "Instance",
+          "source_title": "Mathlib_v427",
+          "score": 0.770786601438961
+        },
+        {
+          "id": "a7297496-a022-44cc-a484-757a60592a78",
+          "name_field": "Instance",
+          "source_title": "Mathlib_v427",
+          "score": 0.7687116413744591
+        },
+        {
+          "id": "49454e18-1b63-4bfb-baf0-7260a0dcc513",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.765539258404104
+        },
+        {
+          "id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.7442442885038987
+        },
+        {
+          "id": "5546ccb4-5beb-4176-807a-cc42f622aa33",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.7382828217233072
+        },
+        {
+          "id": "a3fc197e-8b5f-4abc-8978-60af7e764dd4",
+          "name_field": "Thm",
+          "source_title": "Mathlib_v427",
+          "score": 0.7334089676764719
+        },
+        {
+          "id": "e1d60106-de48-4421-babc-899b2b44a430",
+          "name_field": "Def",
+          "source_title": "Mathlib_v427",
+          "score": 0.724819383764845
+        },
+        {
+          "id": "0d06d2af-9329-4056-949b-097c5776413e",
+          "name_field": "Thm",
+          "source_title": "ClassFieldTheory",
+          "score": 0.7166375848953386
+        },
+        {
+          "id": "b04e9e6b-604c-49af-92a7-95e2fbcc34ff",
+          "name_field": "Thm",
+          "source_title": "Mathlib_v427",
+          "score": 0.7031906340166064
+        },
+        {
+          "id": "6c99670a-2466-4a51-8f86-8f0a63cf383f",
+          "name_field": "Thm",
+          "source_title": "Mathlib_v427",
+          "score": 0.7030352563570519
+        }
+      ]
+    },
+    {
+      "query": "law of excluded middle: for every proposition p, p or not p",
+      "target": "Classical.em",
+      "http_status": 200,
+      "elapsed_seconds": 13.799,
+      "target_rank": 3,
+      "result_count": 10,
+      "unique_ids": 8,
+      "results": [
+        {
+          "id": "f77d98aa-828c-4bd3-95bd-23628e13eb0b",
+          "name_field": "Thm",
+          "source_title": "Mathlib_v427",
+          "score": 0.7472606451952193
+        },
+        {
+          "id": "ef40190c-5a88-4d15-9ff1-8e5abf90a7e9",
+          "name_field": "Thm",
+          "source_title": "Mathlib_v427",
+          "score": 0.7295159057138044
+        },
+        {
+          "id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.7284200688633257
+        },
+        {
+          "id": "a6d6f825-68ae-47d2-a7fa-d2e3096bb08e",
+          "name_field": "Thm",
+          "source_title": "Mathlib_v427",
+          "score": 0.7273677769037202
+        },
+        {
+          "id": "bb77a500-ca02-4359-831a-c3d7ff10a000",
+          "name_field": "Definition",
+          "source_title": "Mathlib_v427",
+          "score": 0.7265929526156608
+        },
+        {
+          "id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.72441560639963
+        },
+        {
+          "id": "873e0d28-7984-4ba2-8b0e-232a1cbaff78",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.7215934816626653
+        },
+        {
+          "id": "150e3575-811c-482f-a8a5-1b765b6079e7",
+          "name_field": "Thm",
+          "source_title": "Mathlib_v427",
+          "score": 0.7174222386247212
+        },
+        {
+          "id": "17bbe082-2238-426f-9be2-d1c1e6b23d40",
+          "name_field": "Definition",
+          "source_title": "Mathlib_v427",
+          "score": 0.7143078455036442
+        },
+        {
+          "id": "f77d98aa-828c-4bd3-95bd-23628e13eb0b",
+          "name_field": "Thm",
+          "source_title": "Mathlib_v427",
+          "score": 0.6948917871842687
+        }
+      ]
+    },
+    {
+      "query": "zero plus a natural number equals the same natural number",
+      "target": "Nat.zero_add",
+      "http_status": 200,
+      "elapsed_seconds": 6.357,
+      "target_rank": 1,
+      "result_count": 10,
+      "unique_ids": 6,
+      "results": [
+        {
+          "id": "23cea27e-8254-4e41-96dd-57f732be6402",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8729404059578031
+        },
+        {
+          "id": "5dd9fd70-1bd4-4d7f-be72-a45b65a05bc5",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8728743564262224
+        },
+        {
+          "id": "5dd9fd70-1bd4-4d7f-be72-a45b65a05bc5",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8710208039364755
+        },
+        {
+          "id": "03f70fcb-14db-4a94-895f-307d87e60900",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8369334547361266
+        },
+        {
+          "id": "1cd67e0f-9c77-477d-84e4-dd12f7f58227",
+          "name_field": "Instance",
+          "source_title": "Mathlib_v427",
+          "score": 0.8291876650173851
+        },
+        {
+          "id": "03f70fcb-14db-4a94-895f-307d87e60900",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8290997533224662
+        },
+        {
+          "id": "23cea27e-8254-4e41-96dd-57f732be6402",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8275490581264491
+        },
+        {
+          "id": "b0d97b4a-db7a-4059-904f-f5c2797ce203",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8251975433098027
+        },
+        {
+          "id": "1cd67e0f-9c77-477d-84e4-dd12f7f58227",
+          "name_field": "Instance",
+          "source_title": "Mathlib_v427",
+          "score": 0.8125198036844873
+        },
+        {
+          "id": "465b977a-95c0-4081-bebc-6b8e75ec5ecd",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8108909604215677
+        }
+      ]
+    },
+    {
+      "query": "if the sum of two natural numbers is zero, then both are zero",
+      "target": "Nat.eq_zero_of_add_eq_zero",
+      "http_status": 200,
+      "elapsed_seconds": 8.754,
+      "target_rank": 1,
+      "result_count": 10,
+      "unique_ids": 5,
+      "results": [
+        {
+          "id": "2bc6b0da-d7c1-4270-b311-b7ea83e96caf",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8996375918820966
+        },
+        {
+          "id": "2bc6b0da-d7c1-4270-b311-b7ea83e96caf",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8947381114261503
+        },
+        {
+          "id": "66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8902467539170263
+        },
+        {
+          "id": "dfc97e07-9dba-4b8b-bfa6-6474e07ea7af",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8902467539170263
+        },
+        {
+          "id": "66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.890218125607902
+        },
+        {
+          "id": "dfc97e07-9dba-4b8b-bfa6-6474e07ea7af",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.890218125607902
+        },
+        {
+          "id": "173744e6-8483-451f-941c-6667ae5e2b9f",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8825892489936009
+        },
+        {
+          "id": "173744e6-8483-451f-941c-6667ae5e2b9f",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8572874553614729
+        },
+        {
+          "id": "e49804c0-db03-4bb1-b4b7-649e6e739166",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.856473914174794
+        },
+        {
+          "id": "e49804c0-db03-4bb1-b4b7-649e6e739166",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.8539891965533891
+        }
+      ]
+    },
+    {
+      "query": "Classical.choice",
+      "target": "Classical.choice",
+      "http_status": 200,
+      "elapsed_seconds": 25.43,
+      "target_rank": 1,
+      "result_count": 10,
+      "unique_ids": 10,
+      "results": [
+        {
+          "id": "7b185410-dd7e-483a-b914-98d71aa2e23b",
+          "name_field": "Axiom",
+          "source_title": "Mathlib_v427",
+          "score": 0.7058923723043624
+        },
+        {
+          "id": "91bfe559-5d5b-4238-a715-1472fe8466dc",
+          "name_field": "Def",
+          "source_title": "Mathlib_v427",
+          "score": 0.6517984090091741
+        },
+        {
+          "id": "51f0567f-5c5c-49ff-b995-5e0a1e0a9a03",
+          "name_field": "Def",
+          "source_title": "Mathlib_v427",
+          "score": 0.647588417652722
+        },
+        {
+          "id": "384e1935-464c-4c87-a072-6a4b424b73bb",
+          "name_field": "Thm",
+          "source_title": "Mathlib_v427",
+          "score": 0.6265273645341507
+        },
+        {
+          "id": "ee8de426-e152-4b93-8d74-8b9571cd750a",
+          "name_field": "Def",
+          "source_title": "Mathlib_v427",
+          "score": 0.6226397117352562
+        },
+        {
+          "id": "fb31ca82-2952-45e0-8e10-83defc74936e",
+          "name_field": "Definition",
+          "source_title": "Mathlib_v427",
+          "score": 0.6106461618790241
+        },
+        {
+          "id": "0de90700-b931-4fac-9c8c-9401c1ffbd9c",
+          "name_field": "Def",
+          "source_title": "Mathlib_v427",
+          "score": 0.6095037754535381
+        },
+        {
+          "id": "2b6a8964-760e-4d07-8ed9-d298e874e525",
+          "name_field": "Definition",
+          "source_title": "Mathlib_v427",
+          "score": 0.6037640391658664
+        },
+        {
+          "id": "760c8175-22e5-415d-8ef1-0f43a6e05986",
+          "name_field": "Def",
+          "source_title": "Mathlib_v427",
+          "score": 0.601057386146215
+        },
+        {
+          "id": "24429694-bfba-471f-8323-65376ba97978",
+          "name_field": "Theorem",
+          "source_title": "Mathlib_v427",
+          "score": 0.5999722361597776
+        }
+      ]
+    }
+  ]
+}

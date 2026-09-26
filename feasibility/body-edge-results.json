@@ -1,0 +1,83 @@
+{
+  "followed_edges": [
+    "proof",
+    "def"
+  ],
+  "max_fetched": 120,
+  "results": [
+    {
+      "root": "Classical.em",
+      "fetched": 55,
+      "discovered": 55,
+      "pending": 0,
+      "network_requests": 55,
+      "elapsed_seconds": 17.348,
+      "stop_reason": "complete",
+      "errors": [],
+      "paths_to_choice": [
+        [
+          {
+            "name": "Classical.em",
+            "id": "46f9bdf2-6f17-43d0-9009-8485b2479ea2",
+            "via_edge": null
+          },
+          {
+            "name": "Classical.choose_spec",
+            "id": "24429694-bfba-471f-8323-65376ba97978",
+            "via_edge": "proof"
+          },
+          {
+            "name": "Classical.indefiniteDescription",
+            "id": "900586fb-f641-490a-88d5-e93467529e57",
+            "via_edge": "proof"
+          },
+          {
+            "name": "Classical.choice",
+            "id": "7b185410-dd7e-483a-b914-98d71aa2e23b",
+            "via_edge": "def"
+          }
+        ]
+      ]
+    },
+    {
+      "root": "Nat.add_comm",
+      "fetched": 18,
+      "discovered": 18,
+      "pending": 0,
+      "network_requests": 12,
+      "elapsed_seconds": 3.977,
+      "stop_reason": "complete",
+      "errors": [],
+      "paths_to_choice": []
+    },
+    {
+      "root": "Nat.add_eq_zero",
+      "fetched": 120,
+      "discovered": 137,
+      "pending": 17,
+      "network_requests": 61,
+      "elapsed_seconds": 17.217,
+      "stop_reason": "node_budget",
+      "errors": [],
+      "paths_to_choice": [
+        [
+          {
+            "name": "Nat.add_eq_zero",
+            "id": "66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8",
+            "via_edge": null
+          },
+          {
+            "name": "Classical.propDecidable",
+            "id": "062941d4-a580-486a-91b3-6bae7498558e",
+            "via_edge": "proof"
+          },
+          {
+            "name": "Classical.choice",
+            "id": "7b185410-dd7e-483a-b914-98d71aa2e23b",
+            "via_edge": "def"
+          }
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test API TheoremGraph via Vercel</title>
+<h1>Test API TheoremGraph via Vercel</h1>
+<p>Ce prototype teste deux requêtes à la même origine que cette page.</p>
+<button id="run">Lancer le test</button>
+<pre id="result" aria-live="polite">En attente.</pre>
+<script>
+const output = document.getElementById('result');
+document.getElementById('run').addEventListener('click', async () => {
+  output.textContent = 'Test en cours…';
+  const checks = [
+    ['/tg/graph/embedding?query=Nat.add_comm&n_results=2&formality=formal', 'Recherche'],
+    ['/tg/graph/statement/3ed0f0c3-7f4d-4356-a1ad-9f60c1fbfd32?direction=src&formality=formal', 'Voisinage']
+  ];
+  const results = [];
+  for (const [url, label] of checks) {
+    const started = performance.now();
+    try {
+      const response = await fetch(url);
+      const body = await response.text();
+      let parsed;
+      try { parsed = JSON.parse(body); } catch { parsed = null; }
+      results.push({label, url, status: response.status, type: response.headers.get('content-type'), ms: Math.round(performance.now() - started), keys: parsed && typeof parsed === 'object' ? Object.keys(parsed) : [], preview: body.slice(0, 300)});
+    } catch (error) {
+      results.push({label, url, error: String(error)});
+    }
+    output.textContent = JSON.stringify(results, null, 2);
+  }
+});
+</script>
+</html>

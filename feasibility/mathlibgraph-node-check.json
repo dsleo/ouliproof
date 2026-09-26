@@ -1,0 +1,13 @@
+{
+  "source": "https://huggingface.co/datasets/MathNetwork/MathlibGraph/resolve/main/nodes.csv",
+  "checked_at": "2026-09-25",
+  "row_count": 633364,
+  "columns": ["name", "kind", "module"],
+  "selected_rows": [
+    {"name": "Nat.rec", "kind": "recursor", "module": "Nat"},
+    {"name": "Nat.recOn", "kind": "abbrev", "module": "Nat"},
+    {"name": "Nat.casesOn", "kind": "abbrev", "module": "Nat"},
+    {"name": "Classical.choice", "kind": "axiom", "module": "Classical"}
+  ],
+  "edge_reachability_tested": false
+}
