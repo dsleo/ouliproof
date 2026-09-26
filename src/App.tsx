@@ -5,6 +5,7 @@ import type { Candidate, Declaration, Objective, Policy, TraversalState } from '
 import { POLICY_LABEL } from './domain'
 import { Explorer, findWitness, LIMITS } from './explorer'
 import { interpretObjective, objectiveKey, SUGGESTIONS } from './objectives'
+import { GraphExplorer } from './GraphExplorer'
 import './design.css'
 import './styles.css'
 
@@ -42,8 +43,8 @@ function downloadJson(filename: string, value: unknown) {
 function QuestionCard({ objective, state, theorem }: { objective: Objective; state?: TraversalState; theorem: Declaration }) {
   const witness = findWitness(state, objective)
   const unsupported = objective.capability === 'unavailable'
-  const badge = unsupported ? 'Non déterminable' : witness ? 'Témoin observé' : state?.status === 'complete' ? 'Aucun témoin observé' : state?.status === 'limited' ? 'Exploration limitée' : state?.status === 'error' ? 'Erreur API' : state?.status === 'paused' ? 'En pause' : 'Recherche en cours'
-  const kind = unsupported ? 'muted' : witness ? 'positive' : state?.status === 'complete' ? 'neutral' : state?.status === 'error' ? 'negative' : 'pending'
+  const badge = unsupported ? 'Non déterminable' : witness ? 'Témoin observé' : state?.status === 'complete' && state.completionReason === 'exhausted' ? 'Aucun témoin observé' : state?.status === 'limited' ? 'Exploration limitée' : state?.status === 'error' ? 'Erreur API' : state?.status === 'paused' ? 'En pause' : 'Recherche en cours'
+  const kind = unsupported ? 'muted' : witness ? 'positive' : state?.status === 'complete' && state.completionReason === 'exhausted' ? 'neutral' : state?.status === 'error' ? 'negative' : 'pending'
   return (
     <article className="answer-card">
       <div className="answer-head">
@@ -65,9 +66,9 @@ function QuestionCard({ objective, state, theorem }: { objective: Objective; sta
               <span className="path-node" title={step.id}>{step.name}</span>
             </li>)}
           </ol>
-          {state?.status !== 'complete' && <p className="fine-print">Témoin trouvé ; l’exploration de cette politique n’est pas terminée.</p>}
+          {state?.completionReason === 'witnesses' ? <p className="fine-print">Exploration arrêtée dès que tous les témoins demandés ont été trouvés. Le graphe affiché est celui parcouru jusque-là.</p> : state?.status !== 'complete' && <p className="fine-print">Témoin trouvé ; l’exploration de cette politique n’est pas terminée.</p>}
         </div>
-      ) : state?.status === 'complete' ? (
+      ) : state?.status === 'complete' && state.completionReason === 'exhausted' ? (
         <p className="answer-note">Aucune déclaration nommée <code>{objective.target}</code> n’a été observée dans la clôture retournée par cette consultation de l’API. Cela ne prouve pas une absence dans Lean.</p>
       ) : state?.status === 'limited' ? (
         <p className="answer-note">Le budget local est atteint. Les dépendances restantes n’ont pas été vérifiées ; aucun verdict négatif n’est possible.</p>
@@ -122,7 +123,7 @@ function App() {
   function resetAnalysis(nextObjectives = objectives) {
     if (!confirmed) return
     const policies = Array.from(new Set(nextObjectives.map((objective) => objective.policy).filter((value): value is Policy => Boolean(value))))
-    explorer.current.setup(confirmed, policies)
+    explorer.current.setup(confirmed, policies, nextObjectives)
     if (policies.length) explorer.current.start()
     setPauseRequested(false)
   }
@@ -161,6 +162,7 @@ function App() {
       if (!found.length) { setSearchStatus('empty'); return }
       setCandidates(found)
       setSearchStatus('ready')
+      window.setTimeout(() => document.getElementById('candidate-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30)
       for (let offset = 0; offset < found.length; offset += 3) {
         if (controller.signal.aborted || serial !== searchSerial.current) break
         const chunk = found.slice(offset, offset + 3)
@@ -189,13 +191,14 @@ function App() {
     setAnalysisStarted(false)
     setStates(new Map())
     explorer.current.cancel()
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.setTimeout(() => document.getElementById('confirmed-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30)
   }
 
   function begin() {
     if (!confirmed || !objectives.length) return
     setAnalysisStarted(true)
     resetAnalysis()
+    window.setTimeout(() => document.getElementById('results-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30)
   }
 
   function share() {
@@ -274,8 +277,9 @@ function App() {
             {confirmed && <section className="confirmed-section" aria-labelledby="confirmed-title"><div className="section-label"><span>03 / DÉCLARATION CONFIRMÉE</span><button type="button" className="text-action" onClick={() => { explorer.current.cancel(); setConfirmed(null); setAnalysisStarted(false); setStates(new Map()) }}><ArrowLeft size={14} /> Changer</button></div><div className="confirmed-heading"><div><p className="eyebrow">Votre choix</p><h2 id="confirmed-title">{confirmed.name}</h2></div><span className="check-seal"><Check size={19} /></span></div>{confirmed.body && <p className="confirmed-statement">{confirmed.body}</p>}{confirmed.slogan && <p className="confirmed-slogan">{confirmed.slogan}</p>}<div className="source-row"><span>Source : {confirmed.sourceLabel ?? 'TheoremGraph'}</span><span>Identifiant : {confirmed.id}</span></div>{!analysisStarted && <div className="confirm-actions"><p>{objectives.length ? `${objectives.length} question${objectives.length > 1 ? 's' : ''} prête${objectives.length > 1 ? 's' : ''} pour l’analyse.` : 'Ajoutez au moins une question ci-dessus pour commencer.'}</p><button className="primary-button" disabled={!objectives.length} onClick={begin}>Examiner les dépendances <ArrowRight size={17} /></button></div>}</section>}
 
             {analysisStarted && confirmed && <section className="results" aria-labelledby="results-title"><div className="section-label"><span>04 / OBSERVATIONS</span><span>API TheoremGraph en direct</span></div><div className="results-heading"><div><h2 id="results-title">Ce que révèle le graphe</h2><p>Un chemin montre une référence observée. Il ne reconstitue pas le script de preuve Lean.</p></div><div className="result-actions">{isRunning && <button type="button" className="secondary-button" onClick={() => { explorer.current.pause(); setPauseRequested(true) }}><Pause size={15} /> {pauseRequested ? 'Pause demandée' : 'Pause'}</button>}{!isRunning && canResume && <button type="button" className="secondary-button" onClick={() => { explorer.current.resume(); setPauseRequested(false) }}><Play size={15} /> Reprendre</button>}<button type="button" className="icon-button" title="Copier le lien" aria-label="Copier le lien" onClick={share}>{copied ? <Check size={17} /> : <Copy size={17} />}</button><button type="button" className="icon-button" title="Exporter en JSON" aria-label="Exporter en JSON" onClick={exportResult}><Download size={17} /></button></div></div>
-              {activeStates.length > 0 && <div className="progress-strip" role="status">{activeStates.map((state) => <div key={state.policy}><span className={`tiny-dot ${state.status}`} /><strong>{POLICY_LABEL[state.policy]}</strong><span>{state.visited.size} traitées · {state.frontier.length} en attente</span><em>{state.status === 'complete' ? 'Terminé' : state.status === 'running' ? 'En cours' : state.status === 'paused' ? 'En pause' : state.status === 'limited' ? 'Limite atteinte' : state.status === 'error' ? 'Erreur' : 'Prêt'}</em></div>)}</div>}
+              {activeStates.length > 0 && <div className="progress-strip" role="status">{activeStates.map((state) => <div key={state.policy}><span className={`tiny-dot ${state.status}`} /><strong>{POLICY_LABEL[state.policy]}</strong><span>{state.visited.size} traitées · {state.frontier.length} en attente</span><em>{state.status === 'complete' ? state.completionReason === 'witnesses' ? 'Témoins trouvés' : 'Clôture épuisée' : state.status === 'running' ? 'En cours' : state.status === 'paused' ? 'En pause' : state.status === 'limited' ? 'Limite atteinte' : state.status === 'error' ? 'Erreur' : 'Prêt'}</em></div>)}</div>}
               <div className="answers">{objectives.map((objective) => <QuestionCard key={objective.id} objective={objective} state={objective.policy ? states.get(objective.policy) : undefined} theorem={confirmed} />)}</div>
+              <GraphExplorer states={states} root={confirmed} onContinue={(policy) => explorer.current.continueAfterWitness(policy)} canContinue={!isRunning} />
               <div className="results-footnote"><CircleHelp size={16} /><p>Une réponse « aucun témoin » porte seulement sur les voisinages renvoyés par l’API pendant cette consultation. La source ne garantit pas un instantané immuable ni une équivalence avec <code>#print axioms</code>.</p></div>
             </section>}
           </div>

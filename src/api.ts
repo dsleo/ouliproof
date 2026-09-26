@@ -16,6 +16,7 @@ function string(value: unknown): string | undefined {
 }
 
 async function getJson(path: string, signal?: AbortSignal, timeout = 30000): Promise<unknown> {
+  if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeout)
   const onAbort = () => controller.abort()
@@ -35,15 +36,30 @@ async function getJson(path: string, signal?: AbortSignal, timeout = 30000): Pro
   }
 }
 
-function withSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
-  if (!signal) return promise
-  if (signal.aborted) return Promise.reject(new DOMException('Aborted', 'AbortError'))
+interface SharedRequest<T> {
+  promise: Promise<T>
+  controller: AbortController
+  consumers: number
+}
+
+function subscribe<T>(entry: SharedRequest<T>, signal: AbortSignal | undefined, onUnused: () => void): Promise<T> {
+  if (signal?.aborted) return Promise.reject(new DOMException('Aborted', 'AbortError'))
+  entry.consumers++
   return new Promise((resolve, reject) => {
-    const onAbort = () => { signal.removeEventListener('abort', onAbort); reject(new DOMException('Aborted', 'AbortError')) }
-    signal.addEventListener('abort', onAbort, { once: true })
-    promise.then(
-      (value) => { signal.removeEventListener('abort', onAbort); resolve(value) },
-      (error) => { signal.removeEventListener('abort', onAbort); reject(error) },
+    let settled = false
+    const finish = () => {
+      if (settled) return false
+      settled = true
+      signal?.removeEventListener('abort', onAbort)
+      entry.consumers--
+      if (!entry.consumers) onUnused()
+      return true
+    }
+    const onAbort = () => { if (finish()) reject(new DOMException('Aborted', 'AbortError')) }
+    signal?.addEventListener('abort', onAbort, { once: true })
+    entry.promise.then(
+      (value) => { if (finish()) resolve(value) },
+      (error) => { if (finish()) reject(error) },
     )
   })
 }
@@ -81,7 +97,7 @@ export function normalizeNeighborhood(value: unknown, expectedId: string): Neigh
 
 export class TheoremGraphClient {
   private cache = new Map<string, Neighborhood>()
-  private inflight = new Map<string, Promise<Neighborhood>>()
+  private inflight = new Map<string, SharedRequest<Neighborhood>>()
 
   async search(query: string, signal?: AbortSignal): Promise<Candidate[]> {
     const params = new URLSearchParams({ query, n_results: '24', formality: 'formal' })
@@ -104,14 +120,22 @@ export class TheoremGraphClient {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
     const cached = this.cache.get(id)
     if (cached) return cached
-    const running = this.inflight.get(id)
-    if (running) return withSignal(running, signal)
-    const promise = getJson(`/graph/statement/${encodeURIComponent(id)}?direction=src&formality=formal`, undefined, 25000)
-      .then((value) => normalizeNeighborhood(value, id))
-      .then((value) => { this.cache.set(id, value); return value })
-      .finally(() => this.inflight.delete(id))
-    this.inflight.set(id, promise)
-    return withSignal(promise, signal)
+    let entry = this.inflight.get(id)
+    if (!entry) {
+      const controller = new AbortController()
+      entry = { controller, consumers: 0, promise: Promise.resolve(undefined as never) }
+      const request = entry
+      request.promise = getJson(`/graph/statement/${encodeURIComponent(id)}?direction=src&formality=formal`, controller.signal, 25000)
+        .then((value) => normalizeNeighborhood(value, id))
+        .then((value) => { this.cache.set(id, value); return value })
+        .finally(() => { if (this.inflight.get(id) === request) this.inflight.delete(id) })
+      this.inflight.set(id, request)
+    }
+    const request = entry
+    return subscribe(request, signal, () => {
+      if (this.inflight.get(id) === request) this.inflight.delete(id)
+      request.controller.abort()
+    })
   }
 
   cachedCount(): number { return this.cache.size }

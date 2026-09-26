@@ -48,8 +48,10 @@ export interface PathStep {
 export interface TraversalState {
   policy: Policy
   status: 'idle' | 'running' | 'paused' | 'complete' | 'limited' | 'error'
+  completionReason?: 'witnesses' | 'exhausted'
   visited: Set<string>
   discovered: Set<string>
+  edges: Edge[]
   names: Map<string, Declaration>
   parents: Map<string, { from: string; edge: string } | null>
   frontier: string[]

@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { normalizeNeighborhood, TheoremGraphClient } from './api'
-import type { Declaration, Neighborhood, TraversalState } from './domain'
+import type { Declaration, Neighborhood, Objective, TraversalState } from './domain'
 import { Explorer, findWitness } from './explorer'
 import { interpretObjective } from './objectives'
 
@@ -91,5 +91,114 @@ describe('parcours des dépendances', () => {
     expect(state.status).toBe('error')
     expect(state.frontier).toContain(IDS.spec)
     expect(findWitness(state, target)).toBeNull()
+  })
+  it('arrête les appels dès que tous les témoins demandés sont observés', async () => {
+    const visited: string[] = []
+    const client = { neighborhood: async (id: string) => {
+      visited.push(id)
+      if (id === IDS.em) return {
+        root: declarations[0], nodes: new Map(declarations.map((item) => [item.id, item])),
+        outgoing: [{ from: IDS.em, to: IDS.choice, type: 'proof' }, { from: IDS.em, to: IDS.spec, type: 'proof' }],
+      }
+      return neighborhood(1)
+    } } as TheoremGraphClient
+    const objective: Objective = { id: 'choice-proof-test', original: 'Classical.choice', kind: 'named', target: 'Classical.choice', policy: 'proof', interpretation: '', capability: 'exact' }
+    const state = await new Promise<TraversalState>((resolve) => {
+      const explorer = new Explorer(client, (states) => {
+        const current = states.get('proof')
+        if (current?.status === 'complete') resolve(current)
+      })
+      explorer.setup(declarations[0], ['proof'], [objective])
+      explorer.start()
+    })
+    expect(state.completionReason).toBe('witnesses')
+    expect(state.frontier).toContain(IDS.spec)
+    expect(visited).toEqual([IDS.em])
+    expect(state.edges).toHaveLength(2)
+    expect(findWitness(state, objective)?.map((step) => step.name)).toEqual(['Classical.em', 'Classical.choice'])
+  })
+  it('ne déclare une absence que si la clôture a été épuisée', async () => {
+    const state = await run('proof')
+    expect(state.completionReason).toBe('exhausted')
+  })
+  it('attend tous les objectifs d’une même politique avant de s’arrêter', async () => {
+    const calls: string[] = []
+    const graph = new Map([
+      [IDS.em, neighborhood(0, { index: 1, type: 'proof' })],
+      [IDS.spec, neighborhood(1, { index: 2, type: 'proof' })],
+      [IDS.indefinite, neighborhood(2)],
+    ])
+    const client = { neighborhood: async (id: string) => {
+      calls.push(id)
+      return graph.get(id)!
+    } } as TheoremGraphClient
+    const objectives: Objective[] = [IDS.spec, IDS.indefinite].map((id) => ({
+      id, original: declarations.find((item) => item.id === id)!.name,
+      kind: 'named', target: declarations.find((item) => item.id === id)!.name,
+      policy: 'proof', interpretation: '', capability: 'exact',
+    }))
+    const state = await new Promise<TraversalState>((resolve) => {
+      const explorer = new Explorer(client, (states) => {
+        const current = states.get('proof')
+        if (current?.completionReason === 'witnesses') resolve(current)
+      })
+      explorer.setup(declarations[0], ['proof'], objectives)
+      explorer.start()
+    })
+    expect(calls).toEqual([IDS.em, IDS.spec])
+    expect(state.frontier).toContain(IDS.indefinite)
+  })
+  it('permet de poursuivre le graphe après un arrêt sur témoin', async () => {
+    const visited: string[] = []
+    const client = { neighborhood: async (id: string) => {
+      visited.push(id)
+      return id === IDS.em ? neighborhood(0, { index: 1, type: 'proof' }) : neighborhood(1)
+    } } as TheoremGraphClient
+    const objective = interpretObjective('Classical.choose_spec')!
+    let explorer!: Explorer
+    let first!: TraversalState
+    const finished = new Promise<TraversalState>((resolve) => {
+      explorer = new Explorer(client, (states) => {
+        const state = states.get('proof')
+        if (state?.completionReason === 'witnesses' && !first) {
+          first = state
+          setTimeout(() => explorer.continueAfterWitness('proof'), 0)
+        }
+        if (state?.completionReason === 'exhausted') resolve(state)
+      })
+    })
+    explorer.setup(declarations[0], ['proof'], [objective])
+    explorer.start()
+    const state = await finished
+    expect(visited).toEqual([IDS.em, IDS.spec])
+    expect(state.visited.size).toBe(2)
+  })
+})
+
+describe('requêtes partagées et annulation', () => {
+  it('garde une requête utile à un autre consommateur, puis annule la dernière', async () => {
+    const originalFetch = globalThis.fetch
+    let underlyingSignal: AbortSignal | undefined
+    const fetchMock = vi.fn((_url: string, options: RequestInit) => {
+      underlyingSignal = options.signal as AbortSignal
+      return new Promise<Response>((_resolve, reject) => underlyingSignal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true }))
+    })
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+    try {
+      const client = new TheoremGraphClient()
+      const first = new AbortController()
+      const second = new AbortController()
+      const a = client.neighborhood(IDS.em, first.signal)
+      const b = client.neighborhood(IDS.em, second.signal)
+      first.abort()
+      await expect(a).rejects.toMatchObject({ name: 'AbortError' })
+      expect(underlyingSignal?.aborted).toBe(false)
+      second.abort()
+      await expect(b).rejects.toMatchObject({ name: 'AbortError' })
+      expect(underlyingSignal?.aborted).toBe(true)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    } finally {
+      globalThis.fetch = originalFetch
+    }
   })
 })

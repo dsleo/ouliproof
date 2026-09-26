@@ -26,6 +26,8 @@ La configuration [vercel.json](vercel.json) applique les deux mêmes réécritur
 2. Attendre la recherche sémantique, comparer les candidats, puis **confirmer** la déclaration voulue. Les noms Lean des candidats proviennent de leur voisinage API, car le champ `name` de la recherche peut être générique.
 3. Lancer l’analyse. Les chemins apparaissent pendant l’exploration ; pause, reprise, copie du lien et export JSON sont disponibles. Un lien partagé recharge la déclaration comme candidate et demande une nouvelle confirmation.
 
+Pour les questions portant sur des déclarations nommées, le parcours s’arrête dès que tous les témoins demandés pour une politique ont été trouvés. Cet arrêt positif ne signifie pas que toute la clôture transitive a été parcourue : l’utilisateur peut poursuivre l’exploration du graphe. Seul un parcours arrivé à épuisement permet de conclure qu’aucun témoin n’a été observé dans les voisinages fournis par l’API.
+
 Les questions V1 prises en charge sont une déclaration Lean nommée dans les arêtes `proof`, et `Classical.choice` ou une autre déclaration nommée dans `proof + def` si la question utilise la forme « définitions vers X ». Les demandes sur la récurrence, l’analyse par cas ou la tactique de l’absurde reçoivent une explication « non déterminable » : le graphe ne permet pas de les attribuer de façon fiable à la preuve écrite.
 
 L’exploration s’arrête à 180 déclarations ou 100 secondes par politique. Une limite, une pause ou une erreur n’est jamais présentée comme une absence de témoin. Les résultats négatifs concernent uniquement les voisinages retournés par l’API pendant cette consultation ; ce ne sont pas des certificats Lean.
@@ -36,6 +38,7 @@ L’exploration s’arrête à 180 déclarations ou 100 secondes par politique. 
 - [src/objectives.ts](src/objectives.ts) : interprétation prudente du champ « Que détecter ? ».
 - [src/explorer.ts](src/explorer.ts) : parcours par couches, politiques distinctes, chemins et budgets.
 - [src/App.tsx](src/App.tsx) : recherche, confirmation, questions, résultats et partage.
+- [src/GraphExplorer.tsx](src/GraphExplorer.tsx) : carte navigable de toutes les arêtes observées, détails des déclarations et vue liste.
 - [src/design.css](src/design.css) : interface responsive « carnet de recherche ».
 
-La [solution et ses limites](SOLUTION_API_VERCEL.md) ainsi que le [journal des essais réels](TESTS_REELS.md) documentent les décisions de V1.
+La [solution et ses limites](SOLUTION_API_VERCEL.md), le [journal des essais réels](TESTS_REELS.md) et l’[étude d’une base de graphe hébergée](ETUDE_HEBERGEMENT_GRAPHE.md) documentent les décisions de V1 et les pistes pour une V2.
