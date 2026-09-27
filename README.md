@@ -18,23 +18,26 @@ npm test
 npm run build
 ```
 
-La configuration [vercel.json](vercel.json) applique les deux mêmes réécritures lors d’un futur déploiement Vercel. Le site n’a pas été déployé de manière permanente.
+La configuration [vercel.json](vercel.json) applique les réécritures lors d’un futur déploiement Vercel. Les voisinages `/tg/graph/statement/:id` sont mis en cache au CDN pendant une heure ; la recherche sémantique reste non mise en cache. Le site n’a pas été déployé de manière permanente. Le cache CDN devra être vérifié après déploiement avec l’en-tête `x-vercel-cache` (`MISS` puis `HIT`) et les réponses réelles de l’API.
 
 ## Parcours
 
 1. Saisir un nom Lean ou une description mathématique et choisir une ou plusieurs questions.
-2. Attendre la recherche sémantique, comparer les candidats, puis **confirmer** la déclaration voulue. Les noms Lean des candidats proviennent de leur voisinage API, car le champ `name` de la recherche peut être générique.
+2. Attendre la recherche sémantique, comparer les cinq premiers candidats, puis afficher les cinq suivants si besoin, et **confirmer** la déclaration voulue. Les noms Lean des candidats proviennent de leur voisinage API, car le champ `name` de la recherche peut être générique. Les candidats supplémentaires ne déclenchent leurs appels que lorsqu’ils sont affichés.
 3. Lancer l’analyse. Les chemins apparaissent pendant l’exploration ; pause, reprise, copie du lien et export JSON sont disponibles. Un lien partagé recharge la déclaration comme candidate et demande une nouvelle confirmation.
 
-Pour les questions portant sur des déclarations nommées, le parcours s’arrête dès que tous les témoins demandés pour une politique ont été trouvés. Cet arrêt positif ne signifie pas que toute la clôture transitive a été parcourue : l’utilisateur peut poursuivre l’exploration du graphe. Seul un parcours arrivé à épuisement permet de conclure qu’aucun témoin n’a été observé dans les voisinages fournis par l’API.
+Pour les questions portant sur des déclarations nommées, le parcours traite chaque réponse dès son arrivée et annule les requêtes concurrentes encore inutiles dès que tous les témoins demandés pour une politique ont été trouvés. Ces voisins annulés restent dans la file si l’utilisateur poursuit l’exploration. Cet arrêt positif ne signifie pas que toute la clôture transitive a été parcourue. Seul un parcours arrivé à épuisement permet de conclure qu’aucun témoin n’a été observé dans les voisinages fournis par l’API.
 
 Les questions V1 prises en charge sont une déclaration Lean nommée dans les arêtes `proof`, et `Classical.choice` ou une autre déclaration nommée dans `proof + def` si la question utilise la forme « définitions vers X ». Les demandes sur la récurrence, l’analyse par cas ou la tactique de l’absurde reçoivent une explication « non déterminable » : le graphe ne permet pas de les attribuer de façon fiable à la preuve écrite.
 
 L’exploration s’arrête à 180 déclarations ou 100 secondes par politique. Une limite, une pause ou une erreur n’est jamais présentée comme une absence de témoin. Les résultats négatifs concernent uniquement les voisinages retournés par l’API pendant cette consultation ; ce ne sont pas des certificats Lean.
 
+Les voisinages validés sont réutilisés en mémoire et dans IndexedDB pendant une heure, avec au plus 120 entrées par couche. Le cache navigateur est facultatif : si le stockage est refusé ou évincé, l’application consulte l’API. Un `429` déclenche au plus deux nouveaux essais, en respectant `Retry-After` jusqu’à cinq secondes ; au-delà, l’analyse affiche une erreur et conserve son caractère incomplet. Des compteurs locaux distinguent le temps de recherche, les succès de cache mémoire/navigateur et les appels API. Ils ne constituent pas une télémétrie envoyée à un serveur.
+
 ## Architecture
 
-- [src/api.ts](src/api.ts) : adaptateur de l’API réelle `{root,nodes,edges}`, validation, délais, cache mémoire.
+- [src/api.ts](src/api.ts) : adaptateur de l’API réelle `{root,nodes,edges}`, validation, délais, déduplication des requêtes, cache mémoire et reprise limitée après `429`.
+- [src/neighborhoodCache.ts](src/neighborhoodCache.ts) : cache IndexedDB borné et expirant.
 - [src/objectives.ts](src/objectives.ts) : interprétation prudente du champ « Que détecter ? ».
 - [src/explorer.ts](src/explorer.ts) : parcours par couches, politiques distinctes, chemins et budgets.
 - [src/App.tsx](src/App.tsx) : recherche, confirmation, questions, résultats et partage.

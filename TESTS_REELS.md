@@ -17,3 +17,10 @@
 **Contrôles complémentaires :** affichage mobile iPhone 14 sans débordement horizontal (`scrollWidth = innerWidth = 400` CSS px), lien partagé chargeant le bon UUID et les questions avant confirmation, téléchargement JSON, pause/reprise, tests du moteur, compilation de production et audit des dépendances. Les essais ont porté sur des déclarations de théorie des nombres, de logique classique et d’analyse.
 
 **Nouvelle carte et arrêt anticipé :** sur `Nat.add_comm → Nat.zero_add`, l’arrêt au témoin a laissé 1 voisinage chargé et 12 arêtes observées. L’action « Poursuivre l’exploration » a ensuite atteint la clôture `proof` avec 17 voisinages chargés et 34 arêtes. Recherche de nœud, sélection, vue liste, plein écran et affichage mobile à 400 px ont été contrôlés dans le navigateur.
+
+## Contrôle du cache et du parcours réactif — 27 septembre 2026
+
+- `Nat.add_comm` reste la cinquième candidate dans la recherche réelle ; les cinq premiers noms sont résolus avant le chargement explicite des cinq autres. Le témoin direct `Nat.zero_add` apparaît dès le premier voisinage.
+- Après rechargement d’un lien direct vers `Nat.add_comm`, le navigateur a affiché `1 navigateur, 0 appels API` pour le voisinage de la déclaration : le cache IndexedDB a été utilisé. Dix voisinages validés étaient stockés après l’essai des dix candidats.
+- Sur `Classical.em` confirmé par UUID, la question « axiome du choix » a de nouveau produit `Classical.em → Classical.choose_spec → Classical.indefiniteDescription → Classical.choice` (`proof → proof → def`). Le témoin est apparu après 25 requêtes de parcours et environ 11 secondes dans cette session, puis le parcours s’est arrêté. Ce temps dépend de l’API et n’est pas une garantie de performance.
+- Douze tests automatisés passent, dont un voisin lent annulé lorsque son concurrent trouve le témoin et une réponse `429` avec nouvel essai borné. La compilation de production passe également. Le cache CDN Vercel n’a pas encore été mesuré sur un déploiement : le projet reste local.

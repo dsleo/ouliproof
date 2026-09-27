@@ -132,23 +132,23 @@ export class Explorer {
       // can then prevent every later request in the (possibly huge) frontier.
       const batch = state.frontier.slice(0, Math.min(remaining, LIMITS.concurrency))
       if (!batch.length) { state.status = 'limited'; break }
-      const results = await this.fetchBatch(batch, state, generation)
-      if (this.cancelled || generation !== this.generation) return
-      const failure = results.find((item) => item.status === 'rejected')
-      if (failure?.status === 'rejected') {
-        state.status = 'error'
-        state.error = failure.reason instanceof Error ? failure.reason.message : 'Impossible de charger une dépendance.'
-        break
-      }
-
-      const next: string[] = []
+      const pending = new Map(batch.map((id) => {
+        const controller = new AbortController()
+        this.controllers.add(controller)
+        state.requests++
+        const result = this.client.neighborhood(id, controller.signal)
+          .then((value) => ({ id, value, error: null as unknown }))
+          .catch((error: unknown) => ({ id, value: null as never, error }))
+          .finally(() => this.controllers.delete(controller))
+        return [id, { controller, result }] as const
+      }))
       const edgeKeys = this.edgeKeys.get(state.policy)!
       const targets = this.targets.get(state.policy)
-      for (let index = 0; index < batch.length; index++) {
-        const result = results[index]
-        if (result.status !== 'fulfilled') continue
-        const neighborhood = result.value
-        const id = batch[index]
+      let failure: unknown = null
+      while (pending.size && !this.cancelled && generation === this.generation) {
+        const { id, value: neighborhood, error } = await Promise.race([...pending.values()].map((entry) => entry.result))
+        pending.delete(id)
+        if (error) { failure ??= error; continue }
         state.visited.add(id)
         state.names.set(id, neighborhood.root)
         for (const [nodeId, declaration] of neighborhood.nodes) {
@@ -161,19 +161,30 @@ export class Explorer {
           if (!state.discovered.has(edge.to)) {
             state.discovered.add(edge.to)
             state.parents.set(edge.to, { from: id, edge: edge.type })
-            next.push(edge.to)
+            state.frontier.push(edge.to)
           }
         }
+        state.frontier = state.frontier.filter((item) => item !== id)
+        state.elapsedMs = elapsedBefore + performance.now() - started
+        const foundNames = new Set([...state.discovered].filter((nodeId) => state.parents.get(nodeId) !== null).map((nodeId) => state.names.get(nodeId)?.name))
+        if (targets?.size && [...targets].every((target) => foundNames.has(target))) {
+          state.status = 'complete'
+          state.completionReason = 'witnesses'
+          for (const entry of pending.values()) entry.controller.abort()
+          this.emit()
+          break
+        }
+        this.emit()
       }
-      state.frontier = [...state.frontier.slice(batch.length), ...next]
+      if (this.cancelled || generation !== this.generation) return
       state.elapsedMs = elapsedBefore + performance.now() - started
-      const foundNames = new Set([...state.discovered].filter((id) => state.parents.get(id) !== null).map((id) => state.names.get(id)?.name))
-      if (targets?.size && [...targets].every((target) => foundNames.has(target))) {
-        state.status = 'complete'
-        state.completionReason = 'witnesses'
-      }
-      this.emit()
       if (state.completionReason === 'witnesses') break
+      if (failure) {
+        state.status = 'error'
+        state.error = failure instanceof Error ? failure.message : 'Impossible de charger une dépendance.'
+        this.emit()
+        break
+      }
       if (state.frontier.length && (state.visited.size >= LIMITS.nodes || state.requests >= LIMITS.requests || state.elapsedMs >= LIMITS.milliseconds)) {
         state.status = 'limited'; break
       }
@@ -187,14 +198,4 @@ export class Explorer {
     }
   }
 
-  private async fetchBatch(ids: string[], state: TraversalState, generation: number) {
-    if (this.cancelled || generation !== this.generation) return []
-    return Promise.allSettled(ids.map(async (id) => {
-      const controller = new AbortController()
-      this.controllers.add(controller)
-      state.requests++
-      try { return await this.client.neighborhood(id, controller.signal) }
-      finally { this.controllers.delete(controller) }
-    }))
-  }
 }

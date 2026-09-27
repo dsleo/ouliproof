@@ -1,10 +1,11 @@
 import type { Candidate, Declaration, Edge, Neighborhood } from './domain'
+import { readNeighborhood, writeNeighborhood } from './neighborhoodCache'
 
 const API_ROOT = '/tg'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export class ApiError extends Error {
-  constructor(message: string, public status?: number) { super(message) }
+  constructor(message: string, public status?: number, public retryAfterMs?: number) { super(message) }
 }
 
 function object(value: unknown): Record<string, unknown> | null {
@@ -15,15 +16,24 @@ function string(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value : undefined
 }
 
-async function getJson(path: string, signal?: AbortSignal, timeout = 30000): Promise<unknown> {
+function retryAfter(response: Response): number | undefined {
+  const header = response.headers.get('Retry-After')
+  if (!header) return undefined
+  const seconds = Number(header)
+  const milliseconds = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(header) - Date.now()
+  return Number.isFinite(milliseconds) ? Math.max(0, Math.min(milliseconds, 5000)) : undefined
+}
+
+async function getJson(path: string, signal?: AbortSignal, timeout = 30000, onRequest?: () => void): Promise<unknown> {
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeout)
   const onAbort = () => controller.abort()
   signal?.addEventListener('abort', onAbort, { once: true })
   try {
+    onRequest?.()
     const response = await fetch(`${API_ROOT}${path}`, { signal: controller.signal, headers: { Accept: 'application/json' } })
-    if (!response.ok) throw new ApiError(response.status === 429 ? 'L’API limite les requêtes. Réessayez dans un moment.' : `L’API a répondu HTTP ${response.status}.`, response.status)
+    if (!response.ok) throw new ApiError(response.status === 429 ? 'L’API limite les requêtes. Réessayez dans un moment.' : `L’API a répondu HTTP ${response.status}.`, response.status, retryAfter(response))
     const value: unknown = await response.json()
     if (!object(value)) throw new ApiError('Réponse API invalide.')
     return value
@@ -34,6 +44,15 @@ async function getJson(path: string, signal?: AbortSignal, timeout = 30000): Pro
     clearTimeout(timer)
     signal?.removeEventListener('abort', onAbort)
   }
+}
+
+function delay(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) { reject(new DOMException('Aborted', 'AbortError')); return }
+    const timer = setTimeout(() => { signal.removeEventListener('abort', onAbort); resolve() }, ms)
+    const onAbort = () => { clearTimeout(timer); reject(new DOMException('Aborted', 'AbortError')) }
+    signal.addEventListener('abort', onAbort, { once: true })
+  })
 }
 
 interface SharedRequest<T> {
@@ -96,8 +115,16 @@ export function normalizeNeighborhood(value: unknown, expectedId: string): Neigh
 }
 
 export class TheoremGraphClient {
-  private cache = new Map<string, Neighborhood>()
+  private cache = new Map<string, { value: Neighborhood; savedAt: number }>()
   private inflight = new Map<string, SharedRequest<Neighborhood>>()
+  private stats = { memoryHits: 0, browserHits: 0, networkRequests: 0, rateLimits: 0 }
+  private cooldownUntil = 0
+
+  private remember(id: string, value: Neighborhood, savedAt = Date.now()) {
+    this.cache.delete(id)
+    this.cache.set(id, { value, savedAt })
+    if (this.cache.size > 120) this.cache.delete(this.cache.keys().next().value!)
+  }
 
   async search(query: string, signal?: AbortSignal): Promise<Candidate[]> {
     const params = new URLSearchParams({ query, n_results: '24', formality: 'formal' })
@@ -119,15 +146,41 @@ export class TheoremGraphClient {
     if (!UUID.test(id)) throw new ApiError('Identifiant de déclaration invalide.')
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
     const cached = this.cache.get(id)
-    if (cached) return cached
+    if (cached && Date.now() - cached.savedAt < 60 * 60 * 1000) {
+      this.stats.memoryHits++
+      this.remember(id, cached.value, cached.savedAt)
+      return cached.value
+    }
+    if (cached) this.cache.delete(id)
     let entry = this.inflight.get(id)
     if (!entry) {
       const controller = new AbortController()
       entry = { controller, consumers: 0, promise: Promise.resolve(undefined as never) }
       const request = entry
-      request.promise = getJson(`/graph/statement/${encodeURIComponent(id)}?direction=src&formality=formal`, controller.signal, 25000)
-        .then((value) => normalizeNeighborhood(value, id))
-        .then((value) => { this.cache.set(id, value); return value })
+      request.promise = (async () => {
+        const stored = await readNeighborhood(id)
+        if (controller.signal.aborted) throw new DOMException('Aborted', 'AbortError')
+        if (stored) {
+          this.stats.browserHits++
+          this.remember(id, stored)
+          return stored
+        }
+        for (let attempt = 0; ; attempt++) {
+          const cooldown = this.cooldownUntil - Date.now()
+          if (cooldown > 0) await delay(cooldown, controller.signal)
+          try {
+            const raw = await getJson(`/graph/statement/${encodeURIComponent(id)}?direction=src&formality=formal`, controller.signal, 25000, () => this.stats.networkRequests++)
+            const value = normalizeNeighborhood(raw, id)
+            this.remember(id, value)
+            void writeNeighborhood(id, value)
+            return value
+          } catch (error) {
+            if (!(error instanceof ApiError) || error.status !== 429 || attempt >= 2) throw error
+            this.stats.rateLimits++
+            this.cooldownUntil = Math.max(this.cooldownUntil, Date.now() + (error.retryAfterMs ?? 1000 * 2 ** attempt))
+          }
+        }
+      })()
         .finally(() => { if (this.inflight.get(id) === request) this.inflight.delete(id) })
       this.inflight.set(id, request)
     }
@@ -139,4 +192,5 @@ export class TheoremGraphClient {
   }
 
   cachedCount(): number { return this.cache.size }
+  cacheStats() { return { ...this.stats, cached: this.cache.size } }
 }

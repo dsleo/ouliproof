@@ -173,6 +173,33 @@ describe('parcours des dépendances', () => {
     expect(visited).toEqual([IDS.em, IDS.spec])
     expect(state.visited.size).toBe(2)
   })
+  it('arrête un voisin lent dès que son concurrent révèle le témoin, puis peut le reprendre', async () => {
+    const objective: Objective = { id: 'choice-proof-concurrent', original: 'Classical.choice', kind: 'named', target: 'Classical.choice', policy: 'proof', interpretation: '', capability: 'exact' }
+    const started: string[] = []
+    let slowAborted = false
+    const client = { neighborhood: (id: string, signal?: AbortSignal) => {
+      started.push(id)
+      if (id === IDS.em) return Promise.resolve({
+        root: declarations[0], nodes: new Map(declarations.map((item) => [item.id, item])),
+        outgoing: [{ from: IDS.em, to: IDS.spec, type: 'proof' }, { from: IDS.em, to: IDS.indefinite, type: 'proof' }],
+      } as Neighborhood)
+      if (id === IDS.spec) return new Promise<Neighborhood>((resolve, reject) => {
+        signal?.addEventListener('abort', () => { slowAborted = true; reject(new DOMException('Aborted', 'AbortError')) }, { once: true })
+        setTimeout(() => resolve(neighborhood(1)), 150)
+      })
+      return Promise.resolve(neighborhood(2, { index: 3, type: 'proof' }))
+    } } as TheoremGraphClient
+    const explorer = new Explorer(client, () => {})
+    explorer.setup(declarations[0], ['proof'], [objective])
+    explorer.start()
+    await vi.waitFor(() => expect(explorer.states.get('proof')?.completionReason).toBe('witnesses'))
+    const state = explorer.states.get('proof')!
+    expect(started).toEqual([IDS.em, IDS.spec, IDS.indefinite])
+    expect(slowAborted).toBe(true)
+    expect(state.frontier).toContain(IDS.spec)
+    expect(state.visited.has(IDS.spec)).toBe(false)
+    explorer.cancel()
+  })
 })
 
 describe('requêtes partagées et annulation', () => {
@@ -200,5 +227,19 @@ describe('requêtes partagées et annulation', () => {
     } finally {
       globalThis.fetch = originalFetch
     }
+  })
+  it('réessaie un HTTP 429 avec Retry-After borné', async () => {
+    const originalFetch = globalThis.fetch
+    const payload = { root: { statement_id: IDS.em, name: 'Classical.em' }, nodes: [], edges: [] }
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response('{}', { status: 429, headers: { 'Retry-After': '0' } }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(payload), { status: 200 }))
+    globalThis.fetch = fetchMock as typeof fetch
+    try {
+      const client = new TheoremGraphClient()
+      expect((await client.neighborhood(IDS.em)).root.name).toBe('Classical.em')
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      expect(client.cacheStats().rateLimits).toBe(1)
+    } finally { globalThis.fetch = originalFetch }
   })
 })

@@ -87,6 +87,9 @@ function App() {
   const [searchStatus, setSearchStatus] = useState<SearchStatus>('idle')
   const [searchError, setSearchError] = useState('')
   const [candidates, setCandidates] = useState<Candidate[]>([])
+  const [visibleCandidates, setVisibleCandidates] = useState(5)
+  const [searchMilliseconds, setSearchMilliseconds] = useState<number | null>(null)
+  const [hydrationMilliseconds, setHydrationMilliseconds] = useState(0)
   const [confirmed, setConfirmed] = useState<Declaration | null>(null)
   const [analysisStarted, setAnalysisStarted] = useState(false)
   const [states, setStates] = useState<Map<Policy, TraversalState>>(new Map())
@@ -94,6 +97,7 @@ function App() {
   const [pauseRequested, setPauseRequested] = useState(false)
   const searchController = useRef<AbortController | null>(null)
   const searchSerial = useRef(0)
+  const hydrationTail = useRef<Promise<void>>(Promise.resolve())
   const explorer = useRef(new Explorer(client, setStates))
 
   const activeStates = Array.from(states.values())
@@ -143,6 +147,35 @@ function App() {
     if (analysisStarted && confirmed) resetAnalysis(next)
   }
 
+  async function hydrate(items: Candidate[], controller: AbortController, serial: number) {
+    for (let offset = 0; offset < items.length; offset += 3) {
+      if (controller.signal.aborted || serial !== searchSerial.current) return
+      const started = performance.now()
+      await Promise.allSettled(items.slice(offset, offset + 3).map(async (item) => {
+        try {
+          const neighborhood = await client.neighborhood(item.id, controller.signal)
+          if (controller.signal.aborted || serial !== searchSerial.current) return
+          setCandidates((current) => current.map((candidate) => candidate.id === item.id ? { ...candidate, ...neighborhood.root, slogan: candidate.slogan, score: candidate.score, loading: false } : candidate))
+        } catch (error) {
+          if (controller.signal.aborted || serial !== searchSerial.current) return
+          setCandidates((current) => current.map((candidate) => candidate.id === item.id ? { ...candidate, loading: false, error: formatError(error) } : candidate))
+        }
+      }))
+      if (!controller.signal.aborted && serial === searchSerial.current) setHydrationMilliseconds((current) => current + Math.round(performance.now() - started))
+    }
+  }
+
+  function showMoreCandidates() {
+    const next = Math.min(candidates.length, visibleCandidates + 5)
+    const items = candidates.slice(visibleCandidates, next)
+    setVisibleCandidates(next)
+    if (searchController.current) {
+      const controller = searchController.current
+      const serial = searchSerial.current
+      hydrationTail.current = hydrationTail.current.then(() => hydrate(items, controller, serial))
+    }
+  }
+
   async function search() {
     if (!query.trim()) return
     searchController.current?.abort()
@@ -151,32 +184,24 @@ function App() {
     setAnalysisStarted(false)
     setStates(new Map())
     setCandidates([])
+    setVisibleCandidates(5)
+    setSearchMilliseconds(null)
+    setHydrationMilliseconds(0)
     setSearchError('')
     setSearchStatus('searching')
     const controller = new AbortController()
     searchController.current = controller
     const serial = ++searchSerial.current
+    const started = performance.now()
     try {
       const found = await client.search(query.trim(), controller.signal)
       if (serial !== searchSerial.current) return
+      setSearchMilliseconds(Math.round(performance.now() - started))
       if (!found.length) { setSearchStatus('empty'); return }
       setCandidates(found)
       setSearchStatus('ready')
       window.setTimeout(() => document.getElementById('candidate-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30)
-      for (let offset = 0; offset < found.length; offset += 3) {
-        if (controller.signal.aborted || serial !== searchSerial.current) break
-        const chunk = found.slice(offset, offset + 3)
-        await Promise.allSettled(chunk.map(async (item) => {
-          try {
-            const neighborhood = await client.neighborhood(item.id, controller.signal)
-            if (controller.signal.aborted || serial !== searchSerial.current) return
-            setCandidates((current) => current.map((candidate) => candidate.id === item.id ? { ...candidate, ...neighborhood.root, slogan: candidate.slogan, score: candidate.score, loading: false } : candidate))
-          } catch (error) {
-            if (controller.signal.aborted || serial !== searchSerial.current) return
-            setCandidates((current) => current.map((candidate) => candidate.id === item.id ? { ...candidate, loading: false, error: formatError(error) } : candidate))
-          }
-        }))
-      }
+      hydrationTail.current = hydrationTail.current.then(() => hydrate(found.slice(0, 5), controller, serial))
     } catch (error) {
       if (controller.signal.aborted || serial !== searchSerial.current) return
       setSearchStatus('error')
@@ -272,12 +297,13 @@ function App() {
               {objectives.length > 0 && <div className="selected-questions"><h3>Questions retenues <span>{objectives.length}</span></h3>{objectives.map((objective) => <div className="selected-item" key={objective.id}><div><strong>{objective.original}</strong><p>{objective.interpretation}</p><span className={objective.capability === 'unavailable' ? 'capability no' : 'capability'}>{objective.capability === 'unavailable' ? 'Non déterminable' : policyName(objective.policy)}</span></div><button type="button" onClick={() => removeObjective(objective.id)} aria-label={`Retirer ${objective.original}`}><X size={16} /></button></div>)}</div>}
             </section>
 
-            {searchStatus === 'ready' && !confirmed && <section className="candidate-section" aria-labelledby="candidate-title"><div className="section-label"><span>03 / CONFIRMATION</span><span>Choix obligatoire</span></div><h2 id="candidate-title">Quelle déclaration vouliez-vous&nbsp;?</h2><p className="section-intro">Les résultats sont classés par similarité, pas par correspondance exacte du nom. Vérifiez le nom et le résumé avant de continuer.</p>{/^[A-Za-z_][A-Za-z0-9_'.]*\.[A-Za-z_][A-Za-z0-9_'.]*$/.test(query.trim()) && !candidates.some((candidate) => candidate.name === query.trim()) && candidates.every((candidate) => !candidate.loading) && <p className="search-advice">Le nom <code>{query.trim()}</code> n’apparaît pas parmi ces résultats. La recherche sémantique peut manquer un nom exact ; essayez une description mathématique du résultat.</p>}<div className="candidate-list">{candidates.map((candidate, index) => <article className="candidate" key={candidate.id}><div className="candidate-index">{String(index + 1).padStart(2, '0')}</div><div className="candidate-body"><div className="candidate-top"><h3>{candidate.loading ? 'Identification…' : candidate.name}</h3><span>{candidate.sourceLabel}</span></div>{candidate.body && <p className="formal-body">{candidate.body}</p>}{candidate.slogan && <p>{candidate.slogan}</p>}{candidate.error && <p className="candidate-error">Nom indisponible : {candidate.error}</p>}<small>{candidate.id}</small></div><button className="candidate-select" type="button" disabled={candidate.loading || Boolean(candidate.error)} onClick={() => confirm(candidate)}>{candidate.loading ? <LoaderCircle className="spin" size={15} /> : <>Choisir <ArrowRight size={15} /></>}</button></article>)}</div></section>}
+            {searchStatus === 'ready' && !confirmed && <section className="candidate-section" aria-labelledby="candidate-title"><div className="section-label"><span>03 / CONFIRMATION</span><span>Choix obligatoire</span></div><h2 id="candidate-title">Quelle déclaration vouliez-vous&nbsp;?</h2><p className="section-intro">Les résultats sont classés par similarité, pas par correspondance exacte du nom. Vérifiez le nom et le résumé avant de continuer.</p>{/^[A-Za-z_][A-Za-z0-9_'.]*\.[A-Za-z_][A-Za-z0-9_'.]*$/.test(query.trim()) && !candidates.some((candidate) => candidate.name === query.trim()) && visibleCandidates >= candidates.length && candidates.every((candidate) => !candidate.loading) && <p className="search-advice">Le nom <code>{query.trim()}</code> n’apparaît pas parmi ces résultats. La recherche sémantique peut manquer un nom exact ; essayez une description mathématique du résultat.</p>}<div className="candidate-list">{candidates.slice(0, visibleCandidates).map((candidate, index) => <article className="candidate" key={candidate.id}><div className="candidate-index">{String(index + 1).padStart(2, '0')}</div><div className="candidate-body"><div className="candidate-top"><h3>{candidate.loading ? 'Identification…' : candidate.name}</h3><span>{candidate.sourceLabel}</span></div>{candidate.body && <p className="formal-body">{candidate.body}</p>}{candidate.slogan && <p>{candidate.slogan}</p>}{candidate.error && <p className="candidate-error">Nom indisponible : {candidate.error}</p>}<small>{candidate.id}</small></div><button className="candidate-select" type="button" disabled={candidate.loading || Boolean(candidate.error)} onClick={() => confirm(candidate)}>{candidate.loading ? <LoaderCircle className="spin" size={15} /> : <>Choisir <ArrowRight size={15} /></>}</button></article>)}</div>{visibleCandidates < candidates.length && <button type="button" className="candidate-more" onClick={showMoreCandidates}>Afficher les {candidates.length - visibleCandidates} autres résultats <ArrowDown size={15} /></button>}<p className="candidate-metrics">Recherche : {searchMilliseconds ?? '—'} ms · Noms chargés : {hydrationMilliseconds} ms · Voisinages : {client.cacheStats().memoryHits} mémoire, {client.cacheStats().browserHits} navigateur, {client.cacheStats().networkRequests} appels API{client.cacheStats().rateLimits > 0 ? ` · ${client.cacheStats().rateLimits} limitations temporaires` : ''}</p></section>}
 
             {confirmed && <section className="confirmed-section" aria-labelledby="confirmed-title"><div className="section-label"><span>03 / DÉCLARATION CONFIRMÉE</span><button type="button" className="text-action" onClick={() => { explorer.current.cancel(); setConfirmed(null); setAnalysisStarted(false); setStates(new Map()) }}><ArrowLeft size={14} /> Changer</button></div><div className="confirmed-heading"><div><p className="eyebrow">Votre choix</p><h2 id="confirmed-title">{confirmed.name}</h2></div><span className="check-seal"><Check size={19} /></span></div>{confirmed.body && <p className="confirmed-statement">{confirmed.body}</p>}{confirmed.slogan && <p className="confirmed-slogan">{confirmed.slogan}</p>}<div className="source-row"><span>Source : {confirmed.sourceLabel ?? 'TheoremGraph'}</span><span>Identifiant : {confirmed.id}</span></div>{!analysisStarted && <div className="confirm-actions"><p>{objectives.length ? `${objectives.length} question${objectives.length > 1 ? 's' : ''} prête${objectives.length > 1 ? 's' : ''} pour l’analyse.` : 'Ajoutez au moins une question ci-dessus pour commencer.'}</p><button className="primary-button" disabled={!objectives.length} onClick={begin}>Examiner les dépendances <ArrowRight size={17} /></button></div>}</section>}
 
             {analysisStarted && confirmed && <section className="results" aria-labelledby="results-title"><div className="section-label"><span>04 / OBSERVATIONS</span><span>API TheoremGraph en direct</span></div><div className="results-heading"><div><h2 id="results-title">Ce que révèle le graphe</h2><p>Un chemin montre une référence observée. Il ne reconstitue pas le script de preuve Lean.</p></div><div className="result-actions">{isRunning && <button type="button" className="secondary-button" onClick={() => { explorer.current.pause(); setPauseRequested(true) }}><Pause size={15} /> {pauseRequested ? 'Pause demandée' : 'Pause'}</button>}{!isRunning && canResume && <button type="button" className="secondary-button" onClick={() => { explorer.current.resume(); setPauseRequested(false) }}><Play size={15} /> Reprendre</button>}<button type="button" className="icon-button" title="Copier le lien" aria-label="Copier le lien" onClick={share}>{copied ? <Check size={17} /> : <Copy size={17} />}</button><button type="button" className="icon-button" title="Exporter en JSON" aria-label="Exporter en JSON" onClick={exportResult}><Download size={17} /></button></div></div>
               {activeStates.length > 0 && <div className="progress-strip" role="status">{activeStates.map((state) => <div key={state.policy}><span className={`tiny-dot ${state.status}`} /><strong>{POLICY_LABEL[state.policy]}</strong><span>{state.visited.size} traitées · {state.frontier.length} en attente</span><em>{state.status === 'complete' ? state.completionReason === 'witnesses' ? 'Témoins trouvés' : 'Clôture épuisée' : state.status === 'running' ? 'En cours' : state.status === 'paused' ? 'En pause' : state.status === 'limited' ? 'Limite atteinte' : state.status === 'error' ? 'Erreur' : 'Prêt'}</em></div>)}</div>}
+              <p className="candidate-metrics">Recherche : {searchMilliseconds ?? '—'} ms · Noms chargés : {hydrationMilliseconds} ms · Parcours : {activeStates.map((state) => `${POLICY_LABEL[state.policy]} ${Math.round(state.elapsedMs)} ms / ${state.requests} requêtes`).join(' ; ') || '—'} · Cache : {client.cacheStats().memoryHits} mémoire, {client.cacheStats().browserHits} navigateur, {client.cacheStats().networkRequests} appels API</p>
               <div className="answers">{objectives.map((objective) => <QuestionCard key={objective.id} objective={objective} state={objective.policy ? states.get(objective.policy) : undefined} theorem={confirmed} />)}</div>
               <GraphExplorer states={states} root={confirmed} onContinue={(policy) => explorer.current.continueAfterWitness(policy)} canContinue={!isRunning} />
               <div className="results-footnote"><CircleHelp size={16} /><p>Une réponse « aucun témoin » porte seulement sur les voisinages renvoyés par l’API pendant cette consultation. La source ne garantit pas un instantané immuable ni une équivalence avec <code>#print axioms</code>.</p></div>

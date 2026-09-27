@@ -111,6 +111,9 @@ code { font: .9em 'DM Mono', monospace; }
 .candidate-body .candidate-error { font: 12px 'DM Sans', sans-serif; color: #9a5236; }
 .candidate-select { border: 1px solid #a6b8a7; background: transparent; color: var(--green); display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; min-height: 31px; padding: 0 10px; white-space: nowrap; }
 .candidate-select:hover:not(:disabled) { background: #eaf0e7; }
+.candidate-more { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; border: 1px solid #a6b8a7; background: transparent; color: var(--green); padding: 10px 14px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.candidate-more:hover { background: #eaf0e7; }
+.candidate-metrics { margin: 17px 0 0; color: #758076; font: 10px/1.5 'DM Mono', monospace; }
 
 .confirmed-section { padding-bottom: 30px; }
 .text-action { display: flex; align-items: center; gap: 6px; border: 0; background: none; color: var(--green); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
