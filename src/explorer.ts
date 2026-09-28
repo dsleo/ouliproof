@@ -181,7 +181,7 @@ export class Explorer {
       if (state.completionReason === 'witnesses') break
       if (failure) {
         state.status = 'error'
-        state.error = failure instanceof Error ? failure.message : 'Impossible de charger une dépendance.'
+        state.error = failure instanceof Error ? failure.message : 'Could not load a dependency.'
         this.emit()
         break
       }

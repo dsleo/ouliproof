@@ -61,6 +61,6 @@ export interface TraversalState {
 }
 
 export const POLICY_LABEL: Record<Policy, string> = {
-  proof: 'Références de preuve',
-  body: 'Preuves et définitions',
+  proof: 'Proof references',
+  body: 'Proofs and definitions',
 }

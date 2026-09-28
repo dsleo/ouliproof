@@ -1,47 +1,49 @@
 # Ouliproof
 
-Application web locale pour explorer les dépendances de déclarations Mathlib exposées par l’API TheoremGraph.
+A web app for exploring dependencies between Mathlib declarations through the TheoremGraph API.
 
-## Démarrer
+## Run locally
 
 ```bash
 npm install
 npm run dev -- --port 5187 --strictPort
 ```
 
-Ouvrir [http://127.0.0.1:5187/](http://127.0.0.1:5187/). Le serveur Vite relaie localement `/tg/*` vers `https://api.theoremsearch.com`. Une connexion Internet est nécessaire pour les recherches et les voisinages. Aucun jeu de données du graphe n’est construit ou stocké hors ligne.
+Open [http://127.0.0.1:5187/](http://127.0.0.1:5187/). The [How it works](http://127.0.0.1:5187/how-it-works) page explains how to interpret the graph. Vite proxies `/tg/*` to `https://api.theoremsearch.com`, so searches and neighborhood requests require an internet connection. The app does not build or store a complete offline graph.
 
-Pour la session de démonstration, le serveur est lancé comme service local `com.ouliproof.dev` sur le port `5187` afin qu’il reste disponible après la fin de la tâche. Il peut être arrêté avec `launchctl bootout gui/$(id -u) /tmp/com.ouliproof.dev.plist`.
+The demo server runs as the local `com.ouliproof.dev` service on port `5187`. Stop it with `launchctl bootout gui/$(id -u) /tmp/com.ouliproof.dev.plist`.
 
 ```bash
 npm test
 npm run build
 ```
 
-La configuration [vercel.json](vercel.json) applique les réécritures lors d’un futur déploiement Vercel. Les voisinages `/tg/graph/statement/:id` sont mis en cache au CDN pendant une heure ; la recherche sémantique reste non mise en cache. Le site n’a pas été déployé de manière permanente. Le cache CDN devra être vérifié après déploiement avec l’en-tête `x-vercel-cache` (`MISS` puis `HIT`) et les réponses réelles de l’API.
+The [Vercel configuration](vercel.json) rewrites API requests and the guide route. It caches neighborhood responses at the CDN for one hour; semantic search remains uncached. The site has not been deployed permanently. After a deployment, verify the CDN with real responses and the `x-vercel-cache` header (`MISS`, then `HIT`).
 
-## Parcours
+## Use the app
 
-1. Saisir un nom Lean ou une description mathématique et choisir une ou plusieurs questions.
-2. Attendre la recherche sémantique, comparer les cinq premiers candidats, puis afficher les cinq suivants si besoin, et **confirmer** la déclaration voulue. Les noms Lean des candidats proviennent de leur voisinage API, car le champ `name` de la recherche peut être générique. Les candidats supplémentaires ne déclenchent leurs appels que lorsqu’ils sont affichés.
-3. Lancer l’analyse. Les chemins apparaissent pendant l’exploration ; pause, reprise, copie du lien et export JSON sont disponibles. Un lien partagé recharge la déclaration comme candidate et demande une nouvelle confirmation.
+1. Search for a Lean name or describe a mathematical result. TheoremGraph returns semantic matches, so confirm the exact declaration before continuing.
+2. Ask one or more questions. You can enter a Lean name, such as `depends on Nat.zero_add`, or select a suggested question.
+3. Explore the observed path and navigable graph. Pause, resume, share a link, or export JSON. A shared link loads its declaration as a candidate and still requires confirmation.
 
-Pour les questions portant sur des déclarations nommées, le parcours traite chaque réponse dès son arrivée et annule les requêtes concurrentes encore inutiles dès que tous les témoins demandés pour une politique ont été trouvés. Ces voisins annulés restent dans la file si l’utilisateur poursuit l’exploration. Cet arrêt positif ne signifie pas que toute la clôture transitive a été parcourue. Seul un parcours arrivé à épuisement permet de conclure qu’aucun témoin n’a été observé dans les voisinages fournis par l’API.
+The first five candidate names are loaded initially. You can show five more on demand. Neighborhood responses supply the Lean names because search results may use a generic name.
 
-Les questions V1 prises en charge sont une déclaration Lean nommée dans les arêtes `proof`, et `Classical.choice` ou une autre déclaration nommée dans `proof + def` si la question utilise la forme « définitions vers X ». Les demandes sur la récurrence, l’analyse par cas ou la tactique de l’absurde reçoivent une explication « non déterminable » : le graphe ne permet pas de les attribuer de façon fiable à la preuve écrite.
+For named declarations, each response is processed as it arrives. Once every requested target for a traversal policy is found, pending concurrent requests are cancelled; their nodes remain available if you continue exploring. A found witness does not mean the entire dependency closure was visited. Only an exhausted traversal supports “no witness observed” in the neighborhoods returned during that API consultation.
 
-L’exploration s’arrête à 180 déclarations ou 100 secondes par politique. Une limite, une pause ou une erreur n’est jamais présentée comme une absence de témoin. Les résultats négatifs concernent uniquement les voisinages retournés par l’API pendant cette consultation ; ce ne sont pas des certificats Lean.
+The app can follow `proof` references, or both `proof` and `def` edges when the question specifies definitions. It cannot reliably determine whether the author used induction, case analysis, or proof by contradiction from these edges alone. Such questions are marked **undetermined**.
 
-Les voisinages validés sont réutilisés en mémoire et dans IndexedDB pendant une heure, avec au plus 120 entrées par couche. Le cache navigateur est facultatif : si le stockage est refusé ou évincé, l’application consulte l’API. Un `429` déclenche au plus deux nouveaux essais, en respectant `Retry-After` jusqu’à cinq secondes ; au-delà, l’analyse affiche une erreur et conserve son caractère incomplet. Des compteurs locaux distinguent le temps de recherche, les succès de cache mémoire/navigateur et les appels API. Ils ne constituent pas une télémétrie envoyée à un serveur.
+Each traversal is limited to 180 declarations or 100 seconds. A limit, pause, or API error never becomes a negative finding. Even an exhausted API traversal is not a Lean proof certificate.
 
-## Architecture
+Validated neighborhoods are cached in memory and IndexedDB for one hour, with at most 120 entries per layer. Browser storage is optional. A `429` triggers at most two retries, respecting `Retry-After` up to five seconds. Local performance counters distinguish search, candidate name loading, traversal, memory/browser cache hits, and API calls; they are not sent to a telemetry service.
 
-- [src/api.ts](src/api.ts) : adaptateur de l’API réelle `{root,nodes,edges}`, validation, délais, déduplication des requêtes, cache mémoire et reprise limitée après `429`.
-- [src/neighborhoodCache.ts](src/neighborhoodCache.ts) : cache IndexedDB borné et expirant.
-- [src/objectives.ts](src/objectives.ts) : interprétation prudente du champ « Que détecter ? ».
-- [src/explorer.ts](src/explorer.ts) : parcours par couches, politiques distinctes, chemins et budgets.
-- [src/App.tsx](src/App.tsx) : recherche, confirmation, questions, résultats et partage.
-- [src/GraphExplorer.tsx](src/GraphExplorer.tsx) : carte navigable de toutes les arêtes observées, détails des déclarations et vue liste.
-- [src/design.css](src/design.css) : interface responsive « carnet de recherche ».
+## Code and decisions
 
-La [solution et ses limites](SOLUTION_API_VERCEL.md), le [journal des essais réels](TESTS_REELS.md) et l’[étude d’une base de graphe hébergée](ETUDE_HEBERGEMENT_GRAPHE.md) documentent les décisions de V1 et les pistes pour une V2.
+- [src/api.ts](src/api.ts): API validation, timeouts, request sharing, memory cache, and bounded `429` retries.
+- [src/neighborhoodCache.ts](src/neighborhoodCache.ts): bounded IndexedDB cache with expiration.
+- [src/objectives.ts](src/objectives.ts): conservative interpretation of detection questions, including existing French shared links.
+- [src/explorer.ts](src/explorer.ts): layer-by-layer traversal, distinct policies, paths, cancellation, and budgets.
+- [src/App.tsx](src/App.tsx): search, confirmation, questions, results, and sharing.
+- [src/GraphExplorer.tsx](src/GraphExplorer.tsx): navigable graph, node details, and list view.
+- [src/HowItWorks.tsx](src/HowItWorks.tsx): standalone interpretation guide.
+
+The earlier [API/Vercel study](SOLUTION_API_VERCEL.md), [real-world test log](TESTS_REELS.md), and [graph hosting study](ETUDE_HEBERGEMENT_GRAPHE.md) preserve the original French feasibility notes and V2 options.

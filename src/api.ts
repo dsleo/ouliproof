@@ -33,12 +33,12 @@ async function getJson(path: string, signal?: AbortSignal, timeout = 30000, onRe
   try {
     onRequest?.()
     const response = await fetch(`${API_ROOT}${path}`, { signal: controller.signal, headers: { Accept: 'application/json' } })
-    if (!response.ok) throw new ApiError(response.status === 429 ? 'L’API limite les requêtes. Réessayez dans un moment.' : `L’API a répondu HTTP ${response.status}.`, response.status, retryAfter(response))
+    if (!response.ok) throw new ApiError(response.status === 429 ? 'The API is rate limiting requests. Try again shortly.' : `The API returned HTTP ${response.status}.`, response.status, retryAfter(response))
     const value: unknown = await response.json()
-    if (!object(value)) throw new ApiError('Réponse API invalide.')
+    if (!object(value)) throw new ApiError('Invalid API response.')
     return value
   } catch (error) {
-    if (controller.signal.aborted && !signal?.aborted) throw new ApiError('Délai de réponse de l’API dépassé.')
+    if (controller.signal.aborted && !signal?.aborted) throw new ApiError('The API request timed out.')
     throw error
   } finally {
     clearTimeout(timer)
@@ -89,7 +89,7 @@ export function normalizeNeighborhood(value: unknown, expectedId: string): Neigh
   const statement = object(rootRaw?.statement)
   const paper = object(rootRaw?.paper)
   if (!data || !rootRaw || !Array.isArray(data.nodes) || !Array.isArray(data.edges) || rootRaw.statement_id !== expectedId || !string(rootRaw.name)) {
-    throw new ApiError('Le format du voisinage TheoremGraph a changé ou la déclaration ne correspond pas.')
+    throw new ApiError('The TheoremGraph response format has changed or the declaration does not match.')
   }
   const sourceLabel = string(statement?.paper_external_id) ?? string(paper?.external_id) ?? string(statement?.paper_title)
   const root: Declaration = { id: expectedId, name: rootRaw.name as string, kind: string(statement?.kind), body: string(statement?.body), source: string(paper?.source), sourceLabel }
@@ -107,7 +107,7 @@ export function normalizeNeighborhood(value: unknown, expectedId: string): Neigh
     const to = string(edge?.dep_id)
     const type = string(edge?.edge_type)
     if (from === expectedId && to && type) {
-      if (!nodes.has(to)) throw new ApiError(`La réponse omet le nom d’une dépendance (${to}).`)
+      if (!nodes.has(to)) throw new ApiError(`The response omits the name of a dependency (${to}).`)
       outgoing.push({ from, to, type })
     }
   }
@@ -129,21 +129,21 @@ export class TheoremGraphClient {
   async search(query: string, signal?: AbortSignal): Promise<Candidate[]> {
     const params = new URLSearchParams({ query, n_results: '24', formality: 'formal' })
     const value = object(await getJson(`/graph/embedding?${params}`, signal, 90000))
-    if (!Array.isArray(value?.results)) throw new ApiError('Le format de recherche TheoremGraph a changé.')
+    if (!Array.isArray(value?.results)) throw new ApiError('The TheoremGraph search response format has changed.')
     const found = new Map<string, Candidate>()
     for (const item of value.results) {
       const row = object(item)
       const id = string(row?.statement_id)
       const sourceLabel = string(row?.external_id) ?? string(row?.title)
       if (!id || !UUID.test(id) || !sourceLabel || !/^Mathlib/i.test(sourceLabel) || found.has(id)) continue
-      found.set(id, { id, name: string(row?.name) ?? 'Déclaration', body: string(row?.body), slogan: string(row?.slogan), source: string(row?.source), sourceLabel, score: typeof row?.score === 'number' ? row.score : 0, loading: true })
+      found.set(id, { id, name: string(row?.name) ?? 'Declaration', body: string(row?.body), slogan: string(row?.slogan), source: string(row?.source), sourceLabel, score: typeof row?.score === 'number' ? row.score : 0, loading: true })
       if (found.size === 10) break
     }
     return Array.from(found.values())
   }
 
   async neighborhood(id: string, signal?: AbortSignal): Promise<Neighborhood> {
-    if (!UUID.test(id)) throw new ApiError('Identifiant de déclaration invalide.')
+    if (!UUID.test(id)) throw new ApiError('Invalid declaration ID.')
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
     const cached = this.cache.get(id)
     if (cached && Date.now() - cached.savedAt < 60 * 60 * 1000) {

@@ -47,6 +47,14 @@ async function run(policy: 'proof' | 'body', failId?: string): Promise<Traversal
 }
 
 describe('questions de l’utilisateur', () => {
+  it('accepts the English prompts shown in the interface', () => {
+    expect(interpretObjective('depends on Nat.zero_add')).toMatchObject({ kind: 'named', target: 'Nat.zero_add', policy: 'proof' })
+    expect(interpretObjective('definitions to Classical.choice')).toMatchObject({ target: 'Classical.choice', policy: 'body' })
+    expect(interpretObjective('axiom of choice')).toMatchObject({ target: 'Classical.choice', policy: 'body' })
+    expect(interpretObjective('induction')).toMatchObject({ capability: 'unavailable' })
+    expect(interpretObjective('case analysis')).toMatchObject({ capability: 'unavailable' })
+    expect(interpretObjective('proof by contradiction')).toMatchObject({ capability: 'unavailable' })
+  })
   it('traduit un nom Lean exact en recherche de référence de preuve', () => {
     expect(interpretObjective('dépend de Nat.zero_add')).toMatchObject({ kind: 'named', target: 'Nat.zero_add', policy: 'proof' })
   })
@@ -67,7 +75,7 @@ describe('voisinage TheoremGraph', () => {
     const parsed = normalizeNeighborhood(raw, IDS.em)
     expect(parsed.outgoing).toEqual([{ from: IDS.em, to: IDS.spec, type: 'proof' }])
     expect(parsed.root.sourceLabel).toBe('Mathlib_v427')
-    expect(() => normalizeNeighborhood({ ...raw, nodes: [] }, IDS.em)).toThrow(/omet le nom/)
+    expect(() => normalizeNeighborhood({ ...raw, nodes: [] }, IDS.em)).toThrow(/omits the name/)
   })
 })
 

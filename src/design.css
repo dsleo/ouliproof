@@ -29,15 +29,13 @@ code { font: .9em 'DM Mono', monospace; }
 .site-header nav { display: flex; gap: 32px; color: #4e5a52; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; }
 .site-header nav a { display: flex; align-items: center; gap: 6px; }
 
-.intro { max-width: var(--max); margin: auto; padding: 88px 36px 63px; position: relative; }
-.intro::after { content: '∴'; position: absolute; right: 110px; top: 42px; color: #dfe2d5; font: 210px/1 'Newsreader', serif; transform: rotate(18deg); pointer-events: none; }
+.intro { max-width: 1000px; margin: auto; padding: 50px 36px 43px; position: relative; }
+.intro::after { content: '∴'; position: absolute; right: 110px; top: 10px; color: #dfe2d5; font: 155px/1 'Newsreader', serif; transform: rotate(18deg); pointer-events: none; }
 .intro-kicker { color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
 .intro-kicker .line { width: 26px; height: 1px; background: var(--green); }
-.intro h1 { font: 400 clamp(52px, 6.8vw, 96px)/.99 'Newsreader', serif; letter-spacing: -.065em; max-width: 870px; margin: 26px 0 25px; position: relative; z-index: 1; }
+.intro h1 { font: 400 clamp(50px, 6vw, 78px)/.99 'Newsreader', serif; letter-spacing: -.065em; max-width: 870px; margin: 20px 0 17px; position: relative; z-index: 1; }
 .intro h1 em { color: var(--green); font-weight: 400; white-space: nowrap; }
 .intro > p { font: clamp(19px, 2vw, 24px)/1.35 'Newsreader', serif; max-width: 665px; color: #4f5b50; margin: 0; position: relative; z-index: 1; }
-.intro-meta { display: flex; gap: 30px; margin-top: 42px; color: #68736a; font-size: 12px; position: relative; z-index: 1; }
-.intro-meta > span { display: flex; align-items: center; gap: 9px; }
 .tiny-dot { display: inline-block; width: 7px; height: 7px; background: #81a176; border-radius: 50%; flex: none; }
 .tiny-dot.running { background: #a8a25d; }
 .tiny-dot.error { background: #bd6a50; }
@@ -45,17 +43,16 @@ code { font: .9em 'DM Mono', monospace; }
 .tiny-dot.paused { background: #aaa99b; }
 
 .workspace { background: #fffcf7; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.step-rail { max-width: var(--max); margin: auto; padding: 0 36px; height: 61px; display: flex; align-items: center; gap: 42px; border-bottom: 1px solid var(--line); font-size: 11px; text-transform: uppercase; letter-spacing: .11em; font-weight: 700; color: #a3a9a0; }
+.step-rail { max-width: 1000px; margin: auto; padding: 0 36px; height: 61px; display: flex; align-items: center; gap: 42px; border-bottom: 1px solid var(--line); font-size: 11px; text-transform: uppercase; letter-spacing: .11em; font-weight: 700; color: #a3a9a0; }
 .step-rail span { display: flex; align-items: center; gap: 9px; height: 100%; position: relative; }
 .step-rail .current { color: var(--green); }
 .step-rail .current::after { content: ''; height: 2px; background: var(--green); left: 0; right: 0; bottom: -1px; position: absolute; }
 .step-rail .done { color: #647568; }
 .step-rail b { font: 500 10px 'DM Mono', monospace; }
-.workspace-grid { max-width: var(--max); margin: auto; padding: 0 36px; display: grid; grid-template-columns: minmax(0, 1fr) 292px; gap: 76px; }
-.main-column { min-width: 0; padding-bottom: 70px; }
-.side-column { border-left: 1px solid var(--line); padding: 51px 0 40px 36px; }
-.form-section, .candidate-section, .confirmed-section, .results { padding-top: 47px; }
-.objective-section, .candidate-section, .confirmed-section, .results { margin-top: 43px; border-top: 1px solid var(--line); }
+.workspace-grid { max-width: 1000px; margin: auto; padding: 0 36px; display: block; }
+.main-column { min-width: 0; padding-bottom: 55px; }
+.form-section, .candidate-section, .confirmed-section, .results { padding-top: 32px; }
+.objective-section, .candidate-section, .confirmed-section, .results { margin-top: 30px; border-top: 1px solid var(--line); }
 .section-label { display: flex; justify-content: space-between; gap: 20px; color: #718073; font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
 .section-label span:last-child { color: #9aa59a; }
 .form-section h2, .candidate-section h2, .confirmed-section h2, .results h2 { font: 500 clamp(31px, 3.4vw, 43px)/1.05 'Newsreader', serif; letter-spacing: -.037em; margin: 18px 0 10px; }
@@ -170,62 +167,48 @@ code { font: .9em 'DM Mono', monospace; }
 .results-footnote svg { flex: none; margin-top: 2px; }
 .results-footnote p { font-size: 11px; line-height: 1.55; margin: 0; }
 
-.side-panel { position: sticky; top: 24px; }
-.side-icon { width: 44px; height: 44px; border: 1px solid #aebcaf; color: var(--green); display: grid; place-items: center; }
-.side-panel h2 { font: 500 25px 'Newsreader', serif; letter-spacing: -.02em; margin: 21px 0 11px; }
-.side-panel p { font-size: 12px; line-height: 1.65; color: #6b796d; margin: 0; }
-.side-panel code { color: var(--green); }
-.mini-path { margin: 27px 0; padding: 19px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; align-items: start; gap: 7px; }
-.mini-path span { font: 11px 'DM Mono', monospace; color: #3d5644; }
-.mini-path svg { margin-left: 15px; color: #a2b29f; }
-.side-panel a, .method a { display: inline-flex; align-items: center; gap: 8px; color: var(--green); font-size: 11px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-.side-note { display: flex; gap: 11px; margin-top: 69px; color: #8b9c87; }
-.side-note svg { flex: none; }
-.side-note p { font: 17px/1.3 'Newsreader', serif; margin: 0; color: #647767; }
-.side-meta { margin-top: 24px; display: grid; gap: 10px; color: #9aa399; font-size: 10px; }
-.side-meta span { display: flex; align-items: center; gap: 7px; }
-.method { max-width: var(--max); margin: auto; padding: 80px 36px 96px; display: grid; grid-template-columns: 300px minmax(0, 720px); gap: 76px; }
-.method-number { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .17em; color: #6e876c; padding-top: 10px; }
-.method h2 { font: 400 clamp(32px, 4vw, 49px) 'Newsreader', serif; letter-spacing: -.04em; line-height: 1.05; margin: 0 0 17px; }
-.method p { font: 20px/1.5 'Newsreader', serif; color: #617062; margin: 0 0 23px; }
-.method code { font-size: .8em; color: var(--green); }
 footer { border-top: 1px solid var(--line); max-width: var(--max); margin: auto; padding: 27px 36px 35px; display: flex; justify-content: space-between; gap: 20px; color: #8b958b; font-size: 10px; text-transform: uppercase; letter-spacing: .12em; }
 footer span:first-child { font: 600 20px 'Newsreader', serif; color: var(--green); letter-spacing: -.03em; text-transform: none; }
+.guide-page { max-width: 1050px; margin: auto; padding: 68px 36px 95px; }
+.guide-intro { border-bottom: 1px solid var(--line); padding-bottom: 55px; }
+.guide-intro h1 { font: 400 clamp(54px, 7vw, 88px)/1 'Newsreader', serif; letter-spacing: -.055em; margin: 21px 0 17px; }
+.guide-intro > p:not(.intro-kicker) { max-width: 730px; color: #536154; font: 23px/1.4 'Newsreader', serif; margin: 0; }
+.guide-cta { display: inline-flex; align-items: center; gap: 10px; margin-top: 28px; background: var(--green); color: white; padding: 13px 17px; font-size: 12px; font-weight: 700; }
+.guide-cta:hover { background: #1d4734; text-decoration: none; }
+.guide-sections section { display: grid; grid-template-columns: 235px minmax(0, 1fr); gap: 45px; padding: 36px 0 42px; border-bottom: 1px solid var(--line); }
+.guide-index { color: #6e876c; font-size: 10px; font-weight: 700; letter-spacing: .14em; padding-top: 9px; }
+.guide-sections h2 { font: 400 35px/1.1 'Newsreader', serif; letter-spacing: -.035em; margin: 0 0 14px; }
+.guide-sections p { font-size: 14px; line-height: 1.75; color: #56645a; max-width: 650px; margin: 0 0 12px; }
+.guide-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: var(--green); font: 11px 'DM Mono', monospace; background: #ecf1e9; padding: 14px 16px; width: fit-content; margin-top: 17px; }
+.guide-source { padding: 30px 0 0 280px; }
+.guide-source p { font-size: 12px; color: #778179; line-height: 1.6; }
+.guide-source a { display: inline-flex; align-items: center; gap: 7px; color: var(--green); font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .spin { animation: spin 1.2s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 1050px) {
-  .workspace-grid { gap: 35px; grid-template-columns: minmax(0, 1fr) 240px; }
-  .side-column { padding-left: 24px; }
-  .method { grid-template-columns: 220px 1fr; gap: 38px; }
   .intro::after { right: 40px; opacity: .6; }
 }
 @media (max-width: 790px) {
   .site-header { padding: 0 22px; height: 64px; }
-  .intro { padding: 67px 22px 50px; }
+  .intro { padding: 43px 22px 37px; }
   .intro::after { right: 10px; top: 50px; font-size: 140px; }
   .intro h1 { max-width: 600px; }
   .intro h1 em { white-space: normal; }
   .workspace-grid { display: block; padding: 0 22px; }
-  .side-column { border-left: 0; border-top: 1px solid var(--line); padding: 28px 0 42px; }
-  .side-panel { position: static; display: grid; grid-template-columns: 44px 1fr; gap: 0 18px; }
-  .side-panel h2 { margin: 5px 0; }
-  .side-panel p, .side-panel .mini-path, .side-panel a { grid-column: 2; }
-  .mini-path { max-width: 300px; }
-  .side-note { margin-top: 24px; max-width: 500px; }
   .step-rail { padding: 0 22px; }
-  .method { padding: 64px 22px; display: block; }
-  .method-number { margin-bottom: 18px; }
+  .guide-page { padding: 52px 22px 70px; }
+  .guide-sections section { grid-template-columns: 1fr; gap: 8px; }
+  .guide-source { padding-left: 0; }
   footer { padding: 25px 22px; }
 }
 @media (max-width: 540px) {
   .site-header nav { gap: 14px; font-size: 10px; }
-  .site-header nav a:first-child { display: none; }
-  .intro { padding-top: 58px; }
+  .site-header nav a:last-child { display: none; }
+  .intro { padding-top: 39px; }
   .intro h1 { font-size: clamp(47px, 13.3vw, 68px); margin-top: 21px; }
   .intro > p { font-size: 19px; }
-  .intro-meta { display: block; margin-top: 29px; }
-  .intro-meta > span + span { margin-top: 8px; }
+  .guide-intro h1 { font-size: 58px; }
   .step-rail { gap: 20px; height: 53px; font-size: 9px; }
   .step-rail span { gap: 4px; }
   .workspace-grid { padding: 0 18px; }
