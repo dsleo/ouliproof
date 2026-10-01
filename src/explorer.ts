@@ -1,30 +1,19 @@
 import { TheoremGraphClient } from './api'
 import type { Declaration, Objective, PathStep, Policy, TraversalState } from './domain'
+import { pendingSignatureCandidates, primaryEvidence, type MethodIndex } from './methods'
+import { pathTo } from './paths'
+
+export { pathTo } from './paths'
 
 export const LIMITS = { nodes: 180, requests: 180, milliseconds: 100000, concurrency: 2 }
 
 export function freshState(policy: Policy, root: Declaration): TraversalState {
   return {
-    policy, status: 'idle', visited: new Set(), discovered: new Set([root.id]),
+    policy, rootId: root.id, rootSourceLabel: root.sourceLabel, status: 'idle', visited: new Set(), discovered: new Set([root.id]),
     edges: [],
     names: new Map([[root.id, root]]), parents: new Map([[root.id, null]]),
     frontier: [root.id], requests: 0, elapsedMs: 0,
   }
-}
-
-export function pathTo(state: TraversalState, id: string): PathStep[] {
-  if (!state.parents.has(id)) return []
-  const steps: PathStep[] = []
-  let cursor: string | null = id
-  const seen = new Set<string>()
-  while (cursor && !seen.has(cursor)) {
-    seen.add(cursor)
-    const node: Declaration | undefined = state.names.get(cursor)
-    const parent: { from: string; edge: string } | null | undefined = state.parents.get(cursor)
-    steps.push({ id: cursor, name: node?.name ?? cursor, via: parent?.edge })
-    cursor = parent?.from ?? null
-  }
-  return steps.reverse()
 }
 
 export function findWitness(state: TraversalState | undefined, objective: Objective): PathStep[] | null {
@@ -41,7 +30,8 @@ export function findWitness(state: TraversalState | undefined, objective: Object
 
 export class Explorer {
   states = new Map<Policy, TraversalState>()
-  private targets = new Map<Policy, Set<string>>()
+  private targets = new Map<Policy, Objective[]>()
+  private methodIndex?: MethodIndex
   private edgeKeys = new Map<Policy, Set<string>>()
   private active = false
   private cancelled = false
@@ -52,7 +42,7 @@ export class Explorer {
 
   constructor(private client: TheoremGraphClient, private onUpdate: (states: Map<Policy, TraversalState>) => void) {}
 
-  setup(root: Declaration, policies: Policy[], objectives: Objective[] = []) {
+  setup(root: Declaration, policies: Policy[], objectives: Objective[] = [], methodIndex?: MethodIndex) {
     this.cancel()
     this.generation++
     this.active = false
@@ -60,8 +50,14 @@ export class Explorer {
     this.pauseRequested = false
     this.restartAfterCurrent = []
     this.states = new Map(policies.map((policy) => [policy, freshState(policy, root)]))
-    this.targets = new Map(policies.map((policy) => [policy, new Set(objectives.filter((objective) => objective.kind === 'named' && objective.capability === 'exact' && objective.policy === policy && objective.target).map((objective) => objective.target!))]))
+    this.targets = new Map(policies.map((policy) => [policy, objectives.filter((objective) => objective.capability !== 'unavailable' && objective.policy === policy)]))
+    this.methodIndex = methodIndex
     this.edgeKeys = new Map(policies.map((policy) => [policy, new Set<string>()]))
+    this.emit()
+  }
+
+  setMethodIndex(index: MethodIndex) {
+    this.methodIndex = index
     this.emit()
   }
 
@@ -130,7 +126,11 @@ export class Explorer {
       const remaining = Math.min(LIMITS.nodes - state.visited.size, LIMITS.requests - state.requests)
       // Expand only one concurrent chunk at a time. A witness in this chunk
       // can then prevent every later request in the (possibly huge) frontier.
-      const batch = state.frontier.slice(0, Math.min(remaining, LIMITS.concurrency))
+      const pendingValidation = new Set((this.targets.get(state.policy) ?? []).flatMap((objective) => pendingSignatureCandidates(state, objective)))
+      const nearestDepth = pathTo(state, state.frontier[0]).length
+      const batch = state.frontier.filter((id) => pathTo(state, id).length === nearestDepth)
+        .sort((a, b) => Number(pendingValidation.has(b)) - Number(pendingValidation.has(a)))
+        .slice(0, Math.min(remaining, LIMITS.concurrency))
       if (!batch.length) { state.status = 'limited'; break }
       const pending = new Map(batch.map((id) => {
         const controller = new AbortController()
@@ -152,7 +152,7 @@ export class Explorer {
         state.visited.add(id)
         state.names.set(id, neighborhood.root)
         for (const [nodeId, declaration] of neighborhood.nodes) {
-          if (!state.names.has(nodeId) || nodeId === id) state.names.set(nodeId, declaration)
+          if (!state.names.has(nodeId)) state.names.set(nodeId, declaration)
         }
         for (const edge of neighborhood.outgoing) {
           if (edge.type !== 'proof' && !(state.policy === 'body' && edge.type === 'def')) continue
@@ -166,8 +166,10 @@ export class Explorer {
         }
         state.frontier = state.frontier.filter((item) => item !== id)
         state.elapsedMs = elapsedBefore + performance.now() - started
-        const foundNames = new Set([...state.discovered].filter((nodeId) => state.parents.get(nodeId) !== null).map((nodeId) => state.names.get(nodeId)?.name))
-        if (targets?.size && [...targets].every((target) => foundNames.has(target))) {
+        if (targets?.length && targets.every((objective) => {
+          const evidence = primaryEvidence(state, objective, this.methodIndex)
+          return evidence?.grade === 'observed'
+        })) {
           state.status = 'complete'
           state.completionReason = 'witnesses'
           for (const entry of pending.values()) entry.controller.abort()

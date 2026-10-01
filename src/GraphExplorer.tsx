@@ -6,6 +6,7 @@ import { POLICY_LABEL } from './domain'
 import './graph.css'
 
 type Positioned = { id: string; declaration: Declaration; x: number; y: number; depth: number }
+type EvidencePath = { policy: Policy; path: PathStep[] }
 const NODE_WIDTH = 190
 const NODE_HEIGHT = 32
 const COLUMN_GAP = 92
@@ -59,7 +60,7 @@ function shortName(value: string) {
   return value.length > 25 ? `…${value.slice(-24)}` : value
 }
 
-function GraphView({ state, root, expanded, onExpand }: { state: TraversalState; root: Declaration; expanded: boolean; onExpand: () => void }) {
+function GraphView({ state, root, expanded, onExpand, focusRequest, evidencePaths }: { state: TraversalState; root: Declaration; expanded: boolean; onExpand: () => void; focusRequest?: { id: string; serial: number }; evidencePaths: PathStep[][] }) {
   const [selectedId, setSelectedId] = useState(root.id)
   const [query, setQuery] = useState('')
   const [zoom, setZoom] = useState(1)
@@ -73,6 +74,9 @@ function GraphView({ state, root, expanded, onExpand }: { state: TraversalState;
   const path: PathStep[] = selected ? pathTo(state, selected.id) : []
   const pathEdges = new Set(path.slice(1).map((step, index) => `${path[index].id}>${step.id}`))
   const pathNodes = new Set(path.map((step) => step.id))
+  const evidenceEdges = new Set(evidencePaths.flatMap((item) => item.slice(1).map((step, index) => `${item[index].id}>${step.id}`)))
+  const evidenceNodes = new Set(evidencePaths.flatMap((item) => item.map((step) => step.id)))
+  const evidenceTargets = new Set(evidencePaths.map((item) => item[item.length - 1]?.id))
   const incoming = state.edges.filter((edge) => edge.to === selected?.id)
   const outgoing = state.edges.filter((edge) => edge.from === selected?.id)
 
@@ -85,6 +89,8 @@ function GraphView({ state, root, expanded, onExpand }: { state: TraversalState;
     if (!node || !area) return
     area.scrollTo({ left: (node.x + NODE_WIDTH / 2) * zoom - area.clientWidth / 2, top: (node.y + NODE_HEIGHT / 2) * zoom - area.clientHeight / 2, behavior: 'smooth' })
   }
+
+  useEffect(() => { if (focusRequest && graph.positions.has(focusRequest.id)) focus(focusRequest.id) }, [focusRequest?.serial, state.policy])
 
   function panStart(event: React.PointerEvent<SVGSVGElement>) {
     if (event.target !== event.currentTarget) return
@@ -123,7 +129,7 @@ function GraphView({ state, root, expanded, onExpand }: { state: TraversalState;
           const from = graph.positions.get(edge.from)
           const to = graph.positions.get(edge.to)
           if (!from || !to) return null
-          const highlighted = pathEdges.has(`${edge.from}>${edge.to}`)
+          const highlighted = pathEdges.has(`${edge.from}>${edge.to}`) || evidenceEdges.has(`${edge.from}>${edge.to}`)
           const startX = from.x + NODE_WIDTH
           const endX = to.x
           const startY = from.y + NODE_HEIGHT / 2
@@ -131,7 +137,7 @@ function GraphView({ state, root, expanded, onExpand }: { state: TraversalState;
           const delta = Math.max(32, (endX - startX) / 2)
           return <path key={`${edge.from}-${edge.to}-${edge.type}-${index}`} className={`${edge.type === 'def' ? 'definition' : ''} ${highlighted ? 'highlight' : ''}`} d={`M ${startX} ${startY} C ${startX + delta} ${startY}, ${endX - delta} ${endY}, ${endX} ${endY}`}><title>{from.declaration.name} → {to.declaration.name} · {edge.type}</title></path>
         })}</g>
-        <g className="graph-nodes">{[...graph.positions.values()].map((node) => <g key={node.id} role="button" tabIndex={0} aria-label={`${node.declaration.name}, depth ${node.depth}, ${state.visited.has(node.id) ? 'neighborhood loaded' : 'neighborhood pending'}`} className={`${node.id === selected?.id ? 'selected' : ''} ${pathNodes.has(node.id) ? 'on-path' : ''} ${!state.visited.has(node.id) ? 'unexpanded' : ''} ${query && node.declaration.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) ? 'match' : ''}`} transform={`translate(${node.x}, ${node.y})`} onClick={() => focus(node.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); focus(node.id) } }}><rect width={NODE_WIDTH} height={NODE_HEIGHT} rx="3" /><circle cx="13" cy={NODE_HEIGHT / 2} r="3" /><text x="23" y="20">{shortName(node.declaration.name)}</text><title>{node.declaration.name}</title></g>)}</g>
+        <g className="graph-nodes">{[...graph.positions.values()].map((node) => <g key={node.id} role="button" tabIndex={0} aria-label={`${node.declaration.name}, depth ${node.depth}, ${state.visited.has(node.id) ? 'neighborhood loaded' : 'neighborhood pending'}`} className={`${node.id === selected?.id ? 'selected' : ''} ${pathNodes.has(node.id) || evidenceNodes.has(node.id) ? 'on-path' : ''} ${evidenceTargets.has(node.id) ? 'evidence-target' : ''} ${!state.visited.has(node.id) ? 'unexpanded' : ''} ${query && node.declaration.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) ? 'match' : ''}`} transform={`translate(${node.x}, ${node.y})`} onClick={() => focus(node.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); focus(node.id) } }}><rect width={NODE_WIDTH} height={NODE_HEIGHT} rx="3" /><circle cx="13" cy={NODE_HEIGHT / 2} r="3" /><text x="23" y="20">{shortName(node.declaration.name)}</text><title>{node.declaration.name}</title></g>)}</g>
       </svg></div>}
       <aside className="graph-inspector" aria-label="Selected declaration"><p className="eyebrow">SELECTED NODE</p><h3>{selectedName}</h3><div className="graph-node-meta"><span>Depth {selected?.depth ?? 0}</span><span>{selected && state.visited.has(selected.id) ? 'Neighborhood loaded' : 'Neighborhood not loaded'}</span></div>{selected?.declaration.body && <pre>{selected.declaration.body}</pre>}{selected?.declaration.slogan && <p className="graph-slogan">{selected.declaration.slogan}</p>}<div className="graph-relations"><strong>{incoming.length} incoming</strong>{incoming.slice(0, 9).map((edge, index) => <button key={`${edge.from}-${index}`} onClick={() => focus(edge.from)}><ArrowDownLeft size={12} /><span>{state.names.get(edge.from)?.name ?? edge.from}</span><code>{edge.type}</code></button>)}{incoming.length > 9 && <small>+ {incoming.length - 9} in the list</small>}</div><div className="graph-relations"><strong>{outgoing.length} outgoing</strong>{outgoing.slice(0, 9).map((edge, index) => <button key={`${edge.to}-${index}`} onClick={() => focus(edge.to)}><span>↗</span><span>{state.names.get(edge.to)?.name ?? edge.to}</span><code>{edge.type}</code></button>)}{outgoing.length > 9 && <small>+ {outgoing.length - 9} in the list</small>}</div>{path.length > 1 && <div className="graph-path"><strong>Path from the theorem</strong><ol>{path.map((step) => <li key={step.id}><button onClick={() => focus(step.id)}>{step.name}</button>{step.via && <code>{step.via}</code>}</li>)}</ol></div>}{selected?.declaration.source && <a href={selected.declaration.source} target="_blank" rel="noreferrer">View source ↗</a>}</aside>
     </div>
@@ -139,12 +145,13 @@ function GraphView({ state, root, expanded, onExpand }: { state: TraversalState;
   </div>
 }
 
-export function GraphExplorer({ states, root, onContinue, canContinue }: { states: Map<Policy, TraversalState>; root: Declaration; onContinue: (policy: Policy) => void; canContinue: boolean }) {
+export function GraphExplorer({ states, root, onContinue, canContinue, focusRequest, evidencePaths }: { states: Map<Policy, TraversalState>; root: Declaration; onContinue: (policy: Policy) => void; canContinue: boolean; focusRequest?: { id: string; policy: Policy; serial: number }; evidencePaths: EvidencePath[] }) {
   const [policy, setPolicy] = useState<Policy>('proof')
   const [expanded, setExpanded] = useState(false)
   const available = [...states.keys()]
   const effectivePolicy = states.has(policy) ? policy : available[0]
   const state = states.get(effectivePolicy)
+  useEffect(() => { if (focusRequest && states.has(focusRequest.policy)) setPolicy(focusRequest.policy) }, [focusRequest?.serial, states])
   useEffect(() => {
     if (!expanded) return
     const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') setExpanded(false) }
@@ -152,5 +159,5 @@ export function GraphExplorer({ states, root, onContinue, canContinue }: { state
     return () => document.removeEventListener('keydown', onKey)
   }, [expanded])
   if (!state) return null
-  return <section className="graph-section" aria-labelledby="graph-title"><div className="graph-section-head"><div><p className="eyebrow">04 / GRAPH EXPLORER</p><h3 id="graph-title">The explored graph</h3><p>Explore observed dependencies, including links between branches.</p></div>{available.length > 1 && <div className="graph-policy" role="group" aria-label="Dependency type">{available.map((option) => <button type="button" key={option} className={effectivePolicy === option ? 'active' : ''} aria-pressed={effectivePolicy === option} onClick={() => setPolicy(option)}>{POLICY_LABEL[option]}</button>)}</div>}</div>{state.completionReason === 'witnesses' && state.frontier.length > 0 && <div className="graph-continue"><p>The witness was found. You can continue exploring to expand the graph within the local request limit.</p><button type="button" disabled={!canContinue} onClick={() => onContinue(effectivePolicy)}><Play size={14} /> Continue exploring</button></div>}<GraphView key={`${root.id}-${effectivePolicy}`} state={state} root={root} expanded={expanded} onExpand={() => setExpanded((value) => !value)} /></section>
+  return <section className="graph-section" aria-labelledby="graph-title"><div className="graph-section-head"><div><p className="eyebrow">04 / GRAPH EXPLORER</p><h3 id="graph-title">The explored graph</h3><p>Explore observed dependencies, including links between branches.</p></div>{available.length > 1 && <div className="graph-policy" role="group" aria-label="Dependency type">{available.map((option) => <button type="button" key={option} className={effectivePolicy === option ? 'active' : ''} aria-pressed={effectivePolicy === option} onClick={() => setPolicy(option)}>{POLICY_LABEL[option]}</button>)}</div>}</div>{state.completionReason === 'witnesses' && state.frontier.length > 0 && <div className="graph-continue"><p>The first signals were found. Continue to expand the graph within the local request limit.</p><button type="button" disabled={!canContinue} onClick={() => onContinue(effectivePolicy)}><Play size={14} /> Continue exploring</button></div>}<GraphView key={`${root.id}-${effectivePolicy}`} state={state} root={root} expanded={expanded} onExpand={() => setExpanded((value) => !value)} focusRequest={focusRequest?.policy === effectivePolicy ? focusRequest : undefined} evidencePaths={evidencePaths.filter((item) => item.policy === effectivePolicy).map((item) => item.path)} /></section>
 }

@@ -45,6 +45,8 @@
 .graph-nodes g.unexpanded rect { fill: #f5f7ef; stroke-dasharray: 3 2; }
 .graph-nodes g.unexpanded circle { fill: #aebcab; }
 .graph-nodes g.on-path rect { stroke: #739e74; stroke-width: 1.5; }
+.graph-nodes g.evidence-target:not(.selected) rect { fill: #f9edd2; stroke: #a67932; stroke-width: 2; }
+.graph-nodes g.evidence-target:not(.selected) circle { fill: #a67932; }
 .graph-nodes g.selected rect { fill: #285b45; stroke: #285b45; stroke-width: 2; }
 .graph-nodes g.selected text { fill: #fffdf7; }
 .graph-nodes g.selected circle { fill: #c8e5bd; }

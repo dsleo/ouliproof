@@ -12,7 +12,7 @@ export default function HowItWorks() {
       <div className="guide-intro">
         <p className="intro-kicker"><span className="line" /> A GUIDE TO THE GRAPH</p>
         <h1>How it works</h1>
-        <p>Ouliproof follows the dependencies that TheoremGraph exposes for Mathlib declarations. It shows the path behind a finding and makes the limits of the evidence visible.</p>
+        <p>Ouliproof follows Mathlib proof dependencies and looks for evidence of reasoning methods anywhere along the chain.</p>
         <a className="guide-cta" href="/">Search for a result <ArrowRight size={16} /></a>
       </div>
       <div className="guide-sections">
@@ -22,18 +22,18 @@ export default function HowItWorks() {
         </section>
         <section>
           <span className="guide-index">02 / ASK A SPECIFIC QUESTION</span>
-          <div><h2>Look for a named dependency</h2><p>Ask whether the dependency chain reaches a declaration such as <code>Nat.zero_add</code>. You can follow proof references alone or include definition bodies. A found declaration appears with a navigable path from your chosen result.</p><div className="guide-chain"><span>Selected theorem</span><span>→</span><span>Referenced lemma</span><span>→</span><span>Target declaration</span></div></div>
+          <div><h2>Choose what to detect</h2><p>Ask about induction, case analysis, proof by contradiction, or a named declaration such as <code>Nat.zero_add</code>. Every finding includes the observed signal and a navigable path from your selected result.</p><div className="guide-chain"><span>Selected theorem</span><span>→</span><span>Referenced lemma</span><span>→</span><span>Method signal</span></div></div>
         </section>
         <section>
           <span className="guide-index">03 / READ THE EDGES</span>
-          <div><h2>What a dependency means</h2><p>A <code>proof</code> edge says that a proof term references another declaration. A <code>def</code> edge comes from a definition body. The graph shows references between declarations; it does not reconstruct the Lean proof script or establish which tactic the author used.</p></div>
+          <div><h2>Two kinds of evidence</h2><p>A TheoremGraph <code>proof</code> edge says that a proof term references another declaration; a <code>def</code> edge comes from a definition body. Exact references such as <code>Or.elim</code> and <code>Decidable.byContradiction</code> can be shown directly on these paths.</p><p>A compact index derived from MathlibGraph records tactics for declarations in a pinned Mathlib snapshot. It can reveal an <code>induction</code>, <code>cases</code>, or <code>by_contra</code> tactic in a reached proof. Until the two sources' exact proof versions are matched, such a record is labelled a possible lead.</p></div>
         </section>
         <section>
           <span className="guide-index">04 / INTERPRET THE RESULT</span>
-          <div><h2>How to read a finding</h2><p>When Ouliproof finds every requested target, it stops and displays the observed path. You can continue exploring the graph. If the traversal exhausts the available neighborhoods without a match, the result means only that no witness appeared in the API responses for that consultation. A time limit, request limit, or API error leaves the question open.</p><p>Questions about induction, case analysis, or proof by contradiction cannot be answered reliably from dependency edges alone. Ouliproof marks them as undetermined rather than inferring a tactic from a referenced constant.</p></div>
+          <div><h2>How to read a finding</h2><p>A graph witness reports an exact named reference. A possible method signal reports a recorded tactic for a reached declaration name, with its separate source revision visible. <code>False.elim</code> is labelled ex falso; it does not alone establish proof by contradiction. <code>rcases</code> is labelled destructuring rather than a definite branch.</p><p>The search stops after its first usable signals for all selected questions. You can continue exploring. If no marker appears, the answer describes only the declarations scanned and the detector coverage; it does not prove a method absent. A time limit or API error leaves the scan incomplete.</p></div>
         </section>
       </div>
-      <div className="guide-source"><p>The graph is supplied by TheoremGraph. Its responses are not an immutable Mathlib snapshot or a Lean proof certificate.</p><a href="https://www.theoremsearch.com/docs" target="_blank" rel="noreferrer">Read the API documentation <ExternalLink size={14} /></a></div>
+      <div className="guide-source"><p>Graph data: TheoremGraph. Recorded tactics: MathNetwork/MathlibGraph, Apache 2.0, Mathlib commit 534cf0b8f526. The exact Mathlib commit behind each TheoremGraph snapshot is not published in its API metadata, so tactic records are possible leads across sources. Findings are observations, not Lean proof certificates.</p><a href="https://www.theoremsearch.com/docs" target="_blank" rel="noreferrer">TheoremGraph API <ExternalLink size={14} /></a><a href="https://huggingface.co/datasets/MathNetwork/MathlibGraph" target="_blank" rel="noreferrer">MathlibGraph dataset <ExternalLink size={14} /></a></div>
     </main>
     <SiteFooter />
   </div>

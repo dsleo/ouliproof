@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-01T22:46:23.348195+00:00",
+  "api": "https://api.theoremsearch.com",
+  "maxNodes": 30,
+  "maxSeconds": 45,
+  "cases": [
+    {
+      "query": "compact maximum",
+      "confirmed": "ContinuousOn.exists_isMaxOn'",
+      "id": "28ca120c-3282-4ae2-a63c-5288e144930d",
+      "sourceLabel": "Mathlib_v427",
+      "checked": 30,
+      "pending": 45,
+      "seconds": 15.23,
+      "signals": [],
+      "errors": []
+    },
+    {
+      "query": "maximal ideal is prime",
+      "confirmed": "Ideal.IsMaximal.isPrime'",
+      "id": "9514e3d4-a03f-456a-b23e-204e00966662",
+      "sourceLabel": "Mathlib_v427",
+      "checked": 1,
+      "pending": 0,
+      "seconds": 0.92,
+      "signals": [],
+      "errors": []
+    },
+    {
+      "query": "group of prime order is cyclic",
+      "confirmed": "isCyclic_of_prime_card",
+      "id": "f12838c0-3a1d-4925-adf8-e63c4ca8cf33",
+      "sourceLabel": "Mathlib_v427",
+      "checked": 30,
+      "pending": 26,
+      "seconds": 14.61,
+      "signals": [],
+      "errors": []
+    },
+    {
+      "query": "Yoneda embedding is fully faithful",
+      "confirmed": "CategoryTheory.Yoneda.fullyFaithful",
+      "id": "4ea4d1c7-f4f2-4373-a4c8-3b4642ec2875",
+      "sourceLabel": "Mathlib_v427",
+      "checked": 1,
+      "pending": 0,
+      "seconds": 1.18,
+      "signals": [],
+      "errors": []
+    },
+    {
+      "query": "Euclid lemma",
+      "confirmed": "Nat.Prime.dvd_or_dvd",
+      "id": "c6c6d711-c4c6-41fe-bf5e-ec31778d1abd",
+      "sourceLabel": "Mathlib_v427",
+      "checked": 30,
+      "pending": 39,
+      "seconds": 14.01,
+      "signals": [
+        {
+          "name": "Decidable.byContradiction",
+          "depth": 4,
+          "source": "TheoremGraph",
+          "signal": "contradiction principle"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

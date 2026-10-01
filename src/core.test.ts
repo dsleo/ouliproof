@@ -51,30 +51,31 @@ describe('questions de l’utilisateur', () => {
     expect(interpretObjective('depends on Nat.zero_add')).toMatchObject({ kind: 'named', target: 'Nat.zero_add', policy: 'proof' })
     expect(interpretObjective('definitions to Classical.choice')).toMatchObject({ target: 'Classical.choice', policy: 'body' })
     expect(interpretObjective('axiom of choice')).toMatchObject({ target: 'Classical.choice', policy: 'body' })
-    expect(interpretObjective('induction')).toMatchObject({ capability: 'unavailable' })
-    expect(interpretObjective('case analysis')).toMatchObject({ capability: 'unavailable' })
-    expect(interpretObjective('proof by contradiction')).toMatchObject({ capability: 'unavailable' })
+    expect(interpretObjective('induction')).toMatchObject({ capability: 'hint', policy: 'proof' })
+    expect(interpretObjective('case analysis')).toMatchObject({ capability: 'hint', policy: 'proof' })
+    expect(interpretObjective('proof by contradiction')).toMatchObject({ capability: 'hint', policy: 'proof' })
   })
   it('traduit un nom Lean exact en recherche de référence de preuve', () => {
     expect(interpretObjective('dépend de Nat.zero_add')).toMatchObject({ kind: 'named', target: 'Nat.zero_add', policy: 'proof' })
   })
   it('sépare la recherche de choix des questions de tactique', () => {
     expect(interpretObjective('axiome du choix')).toMatchObject({ target: 'Classical.choice', policy: 'body' })
-    expect(interpretObjective('raisonnement par l’absurde')).toMatchObject({ capability: 'unavailable' })
-    expect(interpretObjective('récurrence')).toMatchObject({ capability: 'unavailable' })
+    expect(interpretObjective('raisonnement par l’absurde')).toMatchObject({ capability: 'hint' })
+    expect(interpretObjective('récurrence')).toMatchObject({ capability: 'hint' })
   })
 })
 
 describe('voisinage TheoremGraph', () => {
   it('ne suit que les arêtes sortant de la racine et refuse une cible sans nom', () => {
     const raw = {
-      root: { statement_id: IDS.em, name: 'Classical.em', statement: { kind: 'theorem', paper_external_id: 'Mathlib_v427' } },
-      nodes: [{ statement_id: IDS.spec, name: 'Classical.choose_spec' }, { statement_id: IDS.indefinite, name: 'Classical.indefiniteDescription' }],
+      root: { statement_id: IDS.em, name: 'Classical.em', statement: { kind: 'theorem', body: 'Classical.em (p : Prop) : p ∨ ¬p', paper_external_id: 'Mathlib_v427' } },
+      nodes: [{ statement_id: IDS.em, name: 'Classical.em' }, { statement_id: IDS.spec, name: 'Classical.choose_spec' }, { statement_id: IDS.indefinite, name: 'Classical.indefiniteDescription' }],
       edges: [{ src_id: IDS.em, dep_id: IDS.spec, edge_type: 'proof' }, { src_id: IDS.spec, dep_id: IDS.indefinite, edge_type: 'proof' }],
     }
     const parsed = normalizeNeighborhood(raw, IDS.em)
     expect(parsed.outgoing).toEqual([{ from: IDS.em, to: IDS.spec, type: 'proof' }])
     expect(parsed.root.sourceLabel).toBe('Mathlib_v427')
+    expect(parsed.nodes.get(IDS.em)?.body).toBe('Classical.em (p : Prop) : p ∨ ¬p')
     expect(() => normalizeNeighborhood({ ...raw, nodes: [] }, IDS.em)).toThrow(/omits the name/)
   })
 })
@@ -99,6 +100,30 @@ describe('parcours des dépendances', () => {
     expect(state.status).toBe('error')
     expect(state.frontier).toContain(IDS.spec)
     expect(findWitness(state, target)).toBeNull()
+  })
+  it('ignores signature edges and terminates on a proof cycle', async () => {
+    const root = declarations[0]
+    const proof = declarations[1]
+    const signatureOnly = declarations[2]
+    const fetched: string[] = []
+    const client = { neighborhood: async (id: string) => {
+      fetched.push(id)
+      return id === root.id ? {
+        root, nodes: new Map(declarations.map((item) => [item.id, item])),
+        outgoing: [{ from: root.id, to: proof.id, type: 'proof' }, { from: root.id, to: signatureOnly.id, type: 'sig' }],
+      } as Neighborhood : {
+        root: proof, nodes: new Map(declarations.map((item) => [item.id, item])),
+        outgoing: [{ from: proof.id, to: root.id, type: 'proof' }],
+      } as Neighborhood
+    } } as TheoremGraphClient
+    const explorer = new Explorer(client, () => {})
+    explorer.setup(root, ['proof'])
+    explorer.start()
+    await vi.waitFor(() => expect(explorer.states.get('proof')?.completionReason).toBe('exhausted'))
+    const state = explorer.states.get('proof')!
+    expect(fetched).toEqual([root.id, proof.id])
+    expect(state.discovered.has(signatureOnly.id)).toBe(false)
+    expect(state.edges).toHaveLength(2)
   })
   it('arrête les appels dès que tous les témoins demandés sont observés', async () => {
     const visited: string[] = []

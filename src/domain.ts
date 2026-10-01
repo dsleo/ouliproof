@@ -47,6 +47,8 @@ export interface PathStep {
 
 export interface TraversalState {
   policy: Policy
+  rootId: string
+  rootSourceLabel?: string
   status: 'idle' | 'running' | 'paused' | 'complete' | 'limited' | 'error'
   completionReason?: 'witnesses' | 'exhausted'
   visited: Set<string>

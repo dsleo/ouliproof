@@ -1,0 +1,228 @@
+{
+  "checkedAt": "2026-10-01T22:36:19.289110+00:00",
+  "mathlibCommit": "534cf0b8f5267c3f20bf52f932ad5f9834187c35",
+  "method": "source text from declaration header to next top-level declaration; token text only",
+  "attemptedRows": {
+    "induction": 15,
+    "cases": 12,
+    "absurd": 16
+  },
+  "sampleMatches": {
+    "induction": [
+      {
+        "name": "AbsoluteValue.IsAdmissible.exists_approx_aux",
+        "module": "Mathlib.NumberTheory.ClassNumber.AdmissibleAbsoluteValue",
+        "line": 70,
+        "token": "induction",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/NumberTheory/ClassNumber/AdmissibleAbsoluteValue.lean#L70"
+      },
+      {
+        "name": "AbsoluteValue.apply_nat_le_self",
+        "module": "Mathlib.Algebra.Order.AbsoluteValue.Basic",
+        "line": 186,
+        "token": "induction",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Algebra/Order/AbsoluteValue/Basic.lean#L186"
+      },
+      {
+        "name": "AbsoluteValue.listSum_le",
+        "module": "Mathlib.Algebra.Order.AbsoluteValue.Basic",
+        "line": 102,
+        "token": "induction",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Algebra/Order/AbsoluteValue/Basic.lean#L102"
+      },
+      {
+        "name": "Action.FintypeCat.toEndHom_trivial_of_mem",
+        "module": "Mathlib.CategoryTheory.Action.Concrete",
+        "line": 151,
+        "token": "induction",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/CategoryTheory/Action/Concrete.lean#L151"
+      },
+      {
+        "name": "Action.diagonalSuccIsoTensorTrivial_hom_hom_apply",
+        "module": "Mathlib.CategoryTheory.Action.Monoidal",
+        "line": 250,
+        "token": "induction",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/CategoryTheory/Action/Monoidal.lean#L250"
+      },
+      {
+        "name": "Action.diagonalSuccIsoTensorTrivial_inv_hom_apply",
+        "module": "Mathlib.CategoryTheory.Action.Monoidal",
+        "line": 264,
+        "token": "induction",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/CategoryTheory/Action/Monoidal.lean#L264"
+      },
+      {
+        "name": "AddChar.coe_prod",
+        "module": "Mathlib.Algebra.Group.AddChar",
+        "line": 274,
+        "token": "induction",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Algebra/Group/AddChar.lean#L274"
+      },
+      {
+        "name": "AddChar.coe_sum",
+        "module": "Mathlib.Algebra.Group.AddChar",
+        "line": 278,
+        "token": "induction",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Algebra/Group/AddChar.lean#L278"
+      },
+      {
+        "name": "AddCircle.continuousAt_equivIco",
+        "module": "Mathlib.Topology.Instances.AddCircle.Defs",
+        "line": 384,
+        "token": "induction",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Topology/Instances/AddCircle/Defs.lean#L384"
+      },
+      {
+        "name": "AddCircle.continuousAt_equivIoc",
+        "module": "Mathlib.Topology.Instances.AddCircle.Defs",
+        "line": 389,
+        "token": "induction",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Topology/Instances/AddCircle/Defs.lean#L389"
+      }
+    ],
+    "cases": [
+      {
+        "name": "AEMeasurable.exists_ae_eq_range_subset",
+        "module": "Mathlib.MeasureTheory.Measure.AEMeasurable",
+        "line": 196,
+        "token": "by_cases",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/MeasureTheory/Measure/AEMeasurable.lean#L196"
+      },
+      {
+        "name": "AList.insertRec_insert",
+        "module": "Mathlib.Data.List.AList",
+        "line": 346,
+        "token": "cases",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Data/List/AList.lean#L346"
+      },
+      {
+        "name": "AList.insert_lookupFinsupp",
+        "module": "Mathlib.Data.Finsupp.AList",
+        "line": 99,
+        "token": "by_cases",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Data/Finsupp/AList.lean#L99"
+      },
+      {
+        "name": "AbsoluteValue.apply_nat_le_self",
+        "module": "Mathlib.Algebra.Order.AbsoluteValue.Basic",
+        "line": 186,
+        "token": "cases",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Algebra/Order/AbsoluteValue/Basic.lean#L186"
+      },
+      {
+        "name": "AbsoluteValue.isEquiv_iff_exists_rpow_eq",
+        "module": "Mathlib.Analysis.AbsoluteValue.Equivalence",
+        "line": 338,
+        "token": "by_cases",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Analysis/AbsoluteValue/Equivalence.lean#L338"
+      },
+      {
+        "name": "AbsoluteValue.map_neg",
+        "module": "Mathlib.Algebra.Order.AbsoluteValue.Basic",
+        "line": 221,
+        "token": "by_cases",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Algebra/Order/AbsoluteValue/Basic.lean#L221"
+      },
+      {
+        "name": "AbstractCompletion.uniformContinuous_extend",
+        "module": "Mathlib.Topology.UniformSpace.AbstractCompletion",
+        "line": 139,
+        "token": "by_cases",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Topology/UniformSpace/AbstractCompletion.lean#L139"
+      },
+      {
+        "name": "AddChar.doubleDualEmb_bijective",
+        "module": "Mathlib.Analysis.Fourier.FiniteAbelian.PontryaginDuality",
+        "line": 157,
+        "token": "cases",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Analysis/Fourier/FiniteAbelian/PontryaginDuality.lean#L157"
+      },
+      {
+        "name": "AddChar.expect_apply_eq_zero_iff_ne_zero",
+        "module": "Mathlib.Analysis.Fourier.FiniteAbelian.PontryaginDuality",
+        "line": 204,
+        "token": "cases",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Analysis/Fourier/FiniteAbelian/PontryaginDuality.lean#L204"
+      },
+      {
+        "name": "AddChar.linearIndependent",
+        "module": "Mathlib.Analysis.Fourier.FiniteAbelian.Orthogonality",
+        "line": 76,
+        "token": "cases",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Analysis/Fourier/FiniteAbelian/Orthogonality.lean#L76"
+      }
+    ],
+    "absurd": [
+      {
+        "name": "AddChar.exists_apply_ne_zero",
+        "module": "Mathlib.Analysis.Fourier.FiniteAbelian.PontryaginDuality",
+        "line": 137,
+        "token": "by_contra",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Analysis/Fourier/FiniteAbelian/PontryaginDuality.lean#L137"
+      },
+      {
+        "name": "Affine.Simplex.dist_lt_of_mem_closedInterior_of_strictConvexSpace",
+        "module": "Mathlib.Analysis.Convex.StrictCombination",
+        "line": 131,
+        "token": "by_contra",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Analysis/Convex/StrictCombination.lean#L131"
+      },
+      {
+        "name": "Affine.Simplex.incenter_mem_interior",
+        "module": "Mathlib.Geometry.Euclidean.Incenter",
+        "line": 532,
+        "token": "by_contra",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Geometry/Euclidean/Incenter.lean#L532"
+      },
+      {
+        "name": "AffineSubspace.inter_nonempty_of_nonempty_of_sup_direction_eq_top",
+        "module": "Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Defs",
+        "line": 872,
+        "token": "by_contra",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/LinearAlgebra/AffineSpace/AffineSubspace/Defs.lean#L872"
+      },
+      {
+        "name": "AffineSubspace.wSameSide_and_wOppSide_iff",
+        "module": "Mathlib.Analysis.Convex.Side",
+        "line": 530,
+        "token": "by_contra",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/Analysis/Convex/Side.lean#L530"
+      },
+      {
+        "name": "AlgHom.IsArithFrobAt.finite_quotient",
+        "module": "Mathlib.RingTheory.Frobenius",
+        "line": 67,
+        "token": "by_contra",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/RingTheory/Frobenius.lean#L67"
+      },
+      {
+        "name": "Algebra.FormallyUnramified.iff_comp_injective_of_small",
+        "module": "Mathlib.RingTheory.Unramified.Basic",
+        "line": 80,
+        "token": "by_contra",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/RingTheory/Unramified/Basic.lean#L80"
+      },
+      {
+        "name": "Algebra.FormallyUnramified.isField_of_isAlgClosed_of_isLocalRing",
+        "module": "Mathlib.RingTheory.Unramified.Field",
+        "line": 112,
+        "token": "by_contra",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/RingTheory/Unramified/Field.lean#L112"
+      },
+      {
+        "name": "Algebra.PreSubmersivePresentation.ofBijectiveAlgebraMap_jacobian",
+        "module": "Mathlib.RingTheory.Extension.Presentation.Submersive",
+        "line": 216,
+        "token": "contradiction",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/RingTheory/Extension/Presentation/Submersive.lean#L216"
+      },
+      {
+        "name": "Algebra.QuasiFinite.finite_primesOver",
+        "module": "Mathlib.RingTheory.QuasiFinite.Basic",
+        "line": 80,
+        "token": "by_contra",
+        "sourceUrl": "https://github.com/leanprover-community/mathlib4/blob/534cf0b8f5267c3f20bf52f932ad5f9834187c35/Mathlib/RingTheory/QuasiFinite/Basic.lean#L80"
+      }
+    ]
+  }
+}

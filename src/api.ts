@@ -98,7 +98,7 @@ export function normalizeNeighborhood(value: unknown, expectedId: string): Neigh
     const node = object(raw)
     const id = string(node?.statement_id)
     const name = string(node?.name)
-    if (id && name) nodes.set(id, { id, name, slogan: string(node?.slogan) })
+    if (id && name && id !== expectedId) nodes.set(id, { id, name, slogan: string(node?.slogan) })
   }
   const outgoing: Edge[] = []
   for (const raw of data.edges) {

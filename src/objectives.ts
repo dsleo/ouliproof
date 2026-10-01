@@ -4,9 +4,9 @@ const LEAN_NAME = /^[A-Za-z_][A-Za-z0-9_'.]*(?:\.[A-Za-z_][A-Za-z0-9_']*)*$/
 
 export const SUGGESTIONS = [
   { label: 'Axiom of choice', value: 'axiom of choice', caption: 'Path to Classical.choice' },
-  { label: 'Induction', value: 'induction', caption: 'Cannot be determined' },
-  { label: 'Case analysis', value: 'case analysis', caption: 'Cannot be determined' },
-  { label: 'Proof by contradiction', value: 'proof by contradiction', caption: 'Cannot be determined' },
+  { label: 'Induction', value: 'induction', caption: 'Recursors and recorded tactics' },
+  { label: 'Case analysis', value: 'case analysis', caption: 'Elimination and recorded tactics' },
+  { label: 'Proof by contradiction', value: 'proof by contradiction', caption: 'Principles and recorded tactics' },
 ]
 
 function make(original: string, kind: Objective['kind'], interpretation: string, capability: Objective['capability'], target?: string, policy?: Policy): Objective {
@@ -22,13 +22,13 @@ export function interpretObjective(raw: string): Objective | null {
     return make(original, 'named', 'Look for Classical.choice through proof references and definition bodies.', 'exact', 'Classical.choice', 'body')
   }
   if (/\b(récurrence|recurrence|induction|récursi\w*|recursi\w*)\b/i.test(normalized)) {
-    return make(original, 'induction', 'TheoremGraph dependencies cannot reliably establish whether this proof uses induction.', 'unavailable')
+    return make(original, 'induction', 'Look for structural recursors in the proof chain and induction tactics recorded for reached declarations in MathlibGraph.', 'hint', undefined, 'proof')
   }
   if (/\b(analyse par cas|disjonction de cas|case analysis|case split|cases?)\b/i.test(normalized)) {
-    return make(original, 'cases', 'Dependencies cannot reliably reveal case analysis in the proof.', 'unavailable')
+    return make(original, 'cases', 'Look for reviewed elimination references and recorded case-splitting tactics in the proof chain.', 'hint', undefined, 'proof')
   }
-  if (/\b(absurde|contraposition|contradiction|by_contra)\b/i.test(normalized)) {
-    return make(original, 'absurd', 'A reference to a constant such as False.elim does not establish that the author used proof by contradiction.', 'unavailable')
+  if (/\b(absurde|contradiction|by_contra)\b/i.test(normalized)) {
+    return make(original, 'absurd', 'Look for contradiction principles and recorded by_contra tactics. False.elim is shown separately as related evidence.', 'hint', undefined, 'proof')
   }
 
   const bodyMatch = original.match(/^(?:définitions? (?:vers|jusqu['’]à)|corps (?:vers|jusqu['’]à)|definitions? (?:to|toward|towards)|proof\s*\+\s*def\s*:?)\s+([A-Za-z_][A-Za-z0-9_'.]*)$/i)
