@@ -28,6 +28,7 @@ code { font: .9em 'DM Mono', monospace; }
 .brand-mark span { color: #c1d5a9; font-size: 20px; margin-left: -2px; }
 .site-header nav { display: flex; gap: 32px; color: #4e5a52; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; }
 .site-header nav a { display: flex; align-items: center; gap: 6px; }
+.site-header nav a[aria-current='page'] { color: var(--green); text-decoration: underline; text-underline-offset: 5px; }
 
 .intro { max-width: 1000px; margin: auto; padding: 50px 36px 43px; position: relative; overflow: clip; }
 .intro::after { content: '∴'; position: absolute; right: 110px; top: 10px; color: #dfe2d5; font: 155px/1 'Newsreader', serif; transform: rotate(18deg); pointer-events: none; }
@@ -105,7 +106,6 @@ code { font: .9em 'DM Mono', monospace; }
 .candidate-select:hover:not(:disabled) { background: #eaf0e7; }
 .candidate-more { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; border: 1px solid #a6b8a7; background: transparent; color: var(--green); padding: 10px 14px; font-size: 12px; font-weight: 700; cursor: pointer; }
 .candidate-more:hover { background: #eaf0e7; }
-.candidate-metrics { margin: 17px 0 0; color: #758076; font: 10px/1.5 'DM Mono', monospace; }
 
 .confirmed-section { padding-bottom: 30px; }
 .text-action { display: flex; align-items: center; gap: 6px; border: 0; background: none; color: var(--green); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
@@ -194,7 +194,7 @@ footer span:first-child { font: 600 20px 'Newsreader', serif; color: var(--green
 }
 @media (max-width: 540px) {
   .site-header nav { gap: 14px; font-size: 10px; }
-  .site-header nav a:last-child { display: none; }
+  .site-header .brand > span:last-child { display: none; }
   .intro { padding-top: 39px; }
   .intro h1 { font-size: clamp(47px, 13.3vw, 68px); margin-top: 21px; }
   .intro > p { font-size: 19px; }
@@ -233,7 +233,7 @@ footer span:first-child { font: 600 20px 'Newsreader', serif; color: var(--green
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 .step-rail, .candidate-index, .candidate-body small, .eyebrow, .source-row, .fine-print, .witness-title span, .edge-type { color: #526357; }
-.section-label, .section-label span:last-child, .example-line, .suggestions small, .objective-form label, .selected-questions h3, .selected-item p, .candidate-top span, .candidate-metrics, .confirm-actions p, .results-heading p, .interpretation, .graph-section-head p:last-child { color: #526357; }
+.section-label, .section-label span:last-child, .example-line, .suggestions small, .objective-form label, .selected-questions h3, .selected-item p, .candidate-top span, .confirm-actions p, .results-heading p, .interpretation, .graph-section-head p:last-child { color: #526357; }
 .search-form input::placeholder, .objective-form input::placeholder { color: #526357; opacity: 1; }
 .step-rail { font-size: 12px; }
 .candidate-index, .candidate-body small, .source-row { font-size: 11px; }
@@ -242,15 +242,8 @@ footer span:first-child { font: 600 20px 'Newsreader', serif; color: var(--green
 .result-actions .secondary-button { min-height: 40px; height: auto; padding: 8px 10px; }
 .search-progress { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .search-progress button { margin-left: auto; min-height: 40px; }
-.diagnostics, .reading-note { margin-top: 17px; color: #526357; font-size: 12px; }
-.diagnostics summary, .reading-note summary { cursor: pointer; font-weight: 700; min-height: 28px; }
-.reading-note { border-top: 1px solid var(--line); padding-top: 15px; }
-.reading-note p { max-width: 75ch; line-height: 1.6; margin: 6px 0 0; }
-.reading-note a { color: var(--green); text-decoration: underline; text-underline-offset: 2px; }
-.diagnostics { margin: 18px 0; }
-.diagnostics .candidate-metrics { margin-top: 4px; font-size: 11px; }
 .candidate-select, .selected-item button, .objective-form button { min-height: 40px; min-width: 40px; }
-.intro-only .site-header nav, .intro-only footer { display: none; }
+.intro-only footer { display: none; }
 .intro-only .intro { min-height: calc(100svh - 76px); max-width: 1000px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding-top: 40px; padding-bottom: 80px; }
 .intro-only .intro::after { display: none; }
 .intro-only .intro h1 { max-width: 780px; margin: 0 0 36px; font-size: clamp(55px, 7vw, 92px); line-height: 1.02; }

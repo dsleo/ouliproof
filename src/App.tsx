@@ -4,7 +4,7 @@ import { ApiError, TheoremGraphClient } from './api'
 import type { Candidate, Declaration, Objective, Policy, TraversalState } from './domain'
 import { POLICY_LABEL } from './domain'
 import { Explorer } from './explorer'
-import { findEvidence, loadMethodIndex, MARKER_SOURCE_URL, primaryEvidence, type MethodIndex, type Evidence } from './methods'
+import { findEvidence, loadMethodIndex, primaryEvidence, type MethodIndex, type Evidence } from './methods'
 import { interpretObjective, objectiveKey, SUGGESTIONS } from './objectives'
 import { GraphExplorer } from './GraphExplorer'
 import { SiteFooter, SiteHeader } from './SiteChrome'
@@ -32,6 +32,10 @@ function formatError(error: unknown) {
 }
 
 function policyName(policy?: Policy) { return policy ? POLICY_LABEL[policy] : 'Outside the current scope' }
+
+function debug(event: string, details: Record<string, unknown>) {
+  console.debug(`[Ouliproof] ${event}`, details)
+}
 
 function EvidenceItem({ evidence, theorem, onInspect }: { evidence: Evidence; theorem: Declaration; onInspect: (id: string) => void }) {
   return <div className={`witness evidence-${evidence.grade}`}>
@@ -91,8 +95,6 @@ function App() {
   const [searchError, setSearchError] = useState('')
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [visibleCandidates, setVisibleCandidates] = useState(5)
-  const [searchMilliseconds, setSearchMilliseconds] = useState<number | null>(null)
-  const [hydrationMilliseconds, setHydrationMilliseconds] = useState(0)
   const [confirmed, setConfirmed] = useState<Declaration | null>(null)
   const [analysisStarted, setAnalysisStarted] = useState(false)
   const [states, setStates] = useState<Map<Policy, TraversalState>>(new Map())
@@ -109,6 +111,7 @@ function App() {
   const searchInput = useRef<HTMLInputElement>(null)
   const searchSerial = useRef(0)
   const hydrationTail = useRef<Promise<void>>(Promise.resolve())
+  const loggedTraversals = useRef(new Map<Policy, string>())
   const explorer = useRef(new Explorer(client, setStates))
 
   const activeStates = Array.from(states.values())
@@ -128,6 +131,16 @@ function App() {
     const timer = window.setInterval(() => setSearchSeconds(Math.floor((Date.now() - started) / 1000)), 1000)
     return () => window.clearInterval(timer)
   }, [searchStatus])
+
+  useEffect(() => {
+    for (const state of states.values()) {
+      if (state.status === 'idle' || state.status === 'running') continue
+      const signature = `${state.rootId}:${state.status}:${state.completionReason}:${state.visited.size}:${state.requests}`
+      if (loggedTraversals.current.get(state.policy) === signature) continue
+      loggedTraversals.current.set(state.policy, signature)
+      debug('traversal', { policy: state.policy, status: state.status, reason: state.completionReason, checked: state.visited.size, pending: state.frontier.length, requests: state.requests, elapsedMs: Math.round(state.elapsedMs), cache: client.cacheStats() })
+    }
+  }, [states])
 
   useEffect(() => {
     const id = initial.linkedId
@@ -150,6 +163,7 @@ function App() {
 
   function resetAnalysis(nextObjectives = objectives, index = methodIndex) {
     if (!confirmed) return
+    loggedTraversals.current.clear()
     const policies = Array.from(new Set(nextObjectives.map((objective) => objective.policy).filter((value): value is Policy => Boolean(value))))
     explorer.current.setup(confirmed, policies, nextObjectives, index)
     if (policies.length) explorer.current.start()
@@ -187,7 +201,7 @@ function App() {
           setCandidates((current) => current.map((candidate) => candidate.id === item.id ? { ...candidate, loading: false, error: formatError(error) } : candidate))
         }
       }))
-      if (!controller.signal.aborted && serial === searchSerial.current) setHydrationMilliseconds((current) => current + Math.round(performance.now() - started))
+      if (!controller.signal.aborted && serial === searchSerial.current) debug('candidate hydration', { count: Math.min(3, items.length - offset), elapsedMs: Math.round(performance.now() - started), cache: client.cacheStats() })
     }
   }
 
@@ -212,8 +226,6 @@ function App() {
     setStates(new Map())
     setCandidates([])
     setVisibleCandidates(5)
-    setSearchMilliseconds(null)
-    setHydrationMilliseconds(0)
     setSearchError('')
     setSearchNotice('')
     setSearchSeconds(0)
@@ -225,7 +237,7 @@ function App() {
     try {
       const found = await client.search(query.trim(), controller.signal)
       if (serial !== searchSerial.current) return
-      setSearchMilliseconds(Math.round(performance.now() - started))
+      debug('semantic search', { count: found.length, elapsedMs: Math.round(performance.now() - started), cache: client.cacheStats() })
       if (!found.length) { setSearchStatus('empty'); return }
       setCandidates(found)
       setSearchStatus('ready')
@@ -306,7 +318,7 @@ function App() {
               {searchStatus === 'error' && <div className="inline-state error" role="alert">{searchError} <button onClick={() => void search()}>Try again</button></div>}
             </section>
 
-            {searchStatus === 'ready' && !confirmed && <section className="candidate-section" aria-labelledby="candidate-title"><div className="section-label"><span>02 / CONFIRM RESULT</span><span>Choose a declaration</span></div><h2 id="candidate-title">Which declaration did you mean?</h2><p className="section-intro">Results are ranked by similarity. Confirm the Lean declaration before choosing a question.</p>{/^[A-Za-z_][A-Za-z0-9_'.]*\.[A-Za-z_][A-Za-z0-9_'.]*$/.test(query.trim()) && !candidates.some((candidate) => candidate.name === query.trim()) && visibleCandidates >= candidates.length && candidates.every((candidate) => !candidate.loading) && <p className="search-advice"><code>{query.trim()}</code> did not appear in these results. Semantic search can miss an exact Lean name; try describing the mathematics instead.</p>}<div className="candidate-list">{candidates.slice(0, visibleCandidates).map((candidate, index) => <article className="candidate" key={candidate.id}><div className="candidate-index">{String(index + 1).padStart(2, '0')}</div><div className="candidate-body"><div className="candidate-top"><h3>{candidate.loading ? 'Loading name…' : candidate.name}</h3><span>{candidate.sourceLabel}</span></div>{candidate.body && <p className="formal-body">{candidate.body}</p>}{candidate.slogan && <p>{candidate.slogan}</p>}{candidate.error && <p className="candidate-error">Name unavailable: {candidate.error}</p>}<small>{candidate.id}</small></div><button className="candidate-select" type="button" disabled={candidate.loading || Boolean(candidate.error)} onClick={() => confirm(candidate)}>{candidate.loading ? <LoaderCircle className="spin" size={15} /> : <>Select <ArrowRight size={15} /></>}</button></article>)}</div>{visibleCandidates < candidates.length && <button type="button" className="candidate-more" onClick={showMoreCandidates}>Show {candidates.length - visibleCandidates} more results <ArrowDown size={15} /></button>}<details className="diagnostics"><summary>Search diagnostics</summary><p className="candidate-metrics">Search: {searchMilliseconds ?? '—'} ms · Name loading: {hydrationMilliseconds} ms · Neighborhoods: {client.cacheStats().memoryHits} memory, {client.cacheStats().browserHits} browser, {client.cacheStats().networkRequests} API calls{client.cacheStats().rateLimits > 0 ? ` · ${client.cacheStats().rateLimits} rate limits` : ''}</p></details></section>}
+            {searchStatus === 'ready' && !confirmed && <section className="candidate-section" aria-labelledby="candidate-title"><div className="section-label"><span>02 / CONFIRM RESULT</span><span>Choose a declaration</span></div><h2 id="candidate-title">Which declaration did you mean?</h2><p className="section-intro">Results are ranked by similarity. Confirm the Lean declaration before choosing a question.</p>{/^[A-Za-z_][A-Za-z0-9_'.]*\.[A-Za-z_][A-Za-z0-9_'.]*$/.test(query.trim()) && !candidates.some((candidate) => candidate.name === query.trim()) && visibleCandidates >= candidates.length && candidates.every((candidate) => !candidate.loading) && <p className="search-advice"><code>{query.trim()}</code> did not appear in these results. Semantic search can miss an exact Lean name; try describing the mathematics instead.</p>}<div className="candidate-list">{candidates.slice(0, visibleCandidates).map((candidate, index) => <article className="candidate" key={candidate.id}><div className="candidate-index">{String(index + 1).padStart(2, '0')}</div><div className="candidate-body"><div className="candidate-top"><h3>{candidate.loading ? 'Loading name…' : candidate.name}</h3><span>{candidate.sourceLabel}</span></div>{candidate.body && <p className="formal-body">{candidate.body}</p>}{candidate.slogan && <p>{candidate.slogan}</p>}{candidate.error && <p className="candidate-error">Name unavailable: {candidate.error}</p>}<small>{candidate.id}</small></div><button className="candidate-select" type="button" disabled={candidate.loading || Boolean(candidate.error)} onClick={() => confirm(candidate)}>{candidate.loading ? <LoaderCircle className="spin" size={15} /> : <>Select <ArrowRight size={15} /></>}</button></article>)}</div>{visibleCandidates < candidates.length && <button type="button" className="candidate-more" onClick={showMoreCandidates}>Show {candidates.length - visibleCandidates} more results <ArrowDown size={15} /></button>}</section>}
 
             {confirmed && <section className="confirmed-section" aria-labelledby="confirmed-title"><div className="section-label"><span>02 / SELECTED RESULT</span><button type="button" className="text-action" onClick={() => { explorer.current.cancel(); setConfirmed(null); setAnalysisStarted(false); setGraphOpen(false); setStates(new Map()) }}><ArrowLeft size={14} /> Change result</button></div><div className="confirmed-heading"><h2 id="confirmed-title">{confirmed.name}</h2><span className="check-seal"><Check size={19} /></span></div>{confirmed.slogan && <p className="confirmed-slogan">{confirmed.slogan}</p>}<details className="selected-details"><summary>Declaration details</summary>{confirmed.body && <p className="confirmed-statement">{confirmed.body}</p>}<div className="source-row"><span>Source: {confirmed.sourceLabel ?? 'TheoremGraph'}</span><span>ID: {confirmed.id}</span></div></details></section>}
 
@@ -329,9 +341,7 @@ function App() {
               {indexStatus === 'loading' && <div className="inline-state" role="status"><LoaderCircle size={16} className="spin" /> Loading the compact MathlibGraph method index…</div>}
               {indexStatus === 'error' && <div className="inline-state error" role="alert">Recorded tactic evidence is unavailable: {indexError} Graph-reference detectors can still run. <button type="button" onClick={() => { void loadMethodIndex().then((index) => { setMethodIndex(index); setIndexStatus('ready'); setIndexError(''); explorer.current.setMethodIndex(index) }).catch((error) => setIndexError(formatError(error))) }}>Retry index</button></div>}
               <div className="answers">{objectives.map((objective) => <QuestionCard key={objective.id} objective={objective} state={objective.policy ? states.get(objective.policy) : undefined} theorem={confirmed} index={methodIndex} indexStatus={indexStatus} onInspect={(id, policy) => { graphReturnFocus.current = document.activeElement as HTMLElement; setGraphOpen(true); setGraphFocus({ id, policy, serial: Date.now() }); window.setTimeout(() => { const title = document.getElementById('graph-title'); title?.scrollIntoView({ behavior: 'smooth', block: 'start' }); title?.focus({ preventScroll: true }) }, 30) }} />)}</div>
-              <details className="diagnostics"><summary>Search and traversal diagnostics</summary><p className="candidate-metrics">Search: {searchMilliseconds ?? '—'} ms · Name loading: {hydrationMilliseconds} ms · Traversal: {activeStates.map((state) => `${POLICY_LABEL[state.policy]} ${Math.round(state.elapsedMs)} ms / ${state.requests} requests`).join(' ; ') || '—'} · Cache: {client.cacheStats().memoryHits} memory, {client.cacheStats().browserHits} browser, {client.cacheStats().networkRequests} API calls</p></details>
               {graphOpen && <GraphExplorer states={states} root={confirmed} onClose={() => { setGraphOpen(false); window.setTimeout(() => graphReturnFocus.current?.focus(), 30) }} onContinue={(policy) => explorer.current.continueAfterWitness(policy)} canContinue={!isRunning} focusRequest={graphFocus} evidencePaths={objectives.flatMap((objective) => { if (!objective.policy) return []; const evidence = primaryEvidence(states.get(objective.policy), objective, methodIndex) ?? findEvidence(states.get(objective.policy), objective, methodIndex)[0]; return evidence ? [{ policy: objective.policy, path: evidence.path }] : [] })} />}
-              <details className="reading-note"><summary>How to read these findings</summary><p>Graph references and recorded tactics are different evidence. MathlibGraph tactic records remain possible leads until their proof revision can be matched to TheoremGraph. No marker observed does not establish absence of a method. <a href={MARKER_SOURCE_URL} target="_blank" rel="noreferrer">Method data source ↗</a></p></details>
             </section>}
           </div>
 

@@ -9,7 +9,7 @@ npm install
 npm run dev -- --port 5187 --strictPort
 ```
 
-Open [http://127.0.0.1:5187/](http://127.0.0.1:5187/). The [How it works](http://127.0.0.1:5187/how-it-works) page explains how to interpret the graph. Vite proxies `/tg/*` to `https://api.theoremsearch.com`, so searches and neighborhood requests require an internet connection. The app does not build or store a complete offline graph.
+Open [http://127.0.0.1:5187/](http://127.0.0.1:5187/). [How it works](http://127.0.0.1:5187/how-it-works) explains the workflow; [The principle](http://127.0.0.1:5187/principle) explains what the evidence can establish. Vite proxies `/tg/*` to `https://api.theoremsearch.com`, so searches and neighborhood requests require an internet connection. The app does not build or store a complete offline graph.
 
 The demo server runs as the local `com.ouliproof.dev` service on port `5187`. Stop it with `launchctl bootout gui/$(id -u) /tmp/com.ouliproof.dev.plist`.
 
@@ -18,7 +18,7 @@ npm test
 npm run build
 ```
 
-The [Vercel configuration](vercel.json) rewrites API requests and the guide route. It caches neighborhood responses at the CDN for one hour; semantic search remains uncached. The site has not been deployed permanently. After a deployment, verify the CDN with real responses and the `x-vercel-cache` header (`MISS`, then `HIT`).
+The [Vercel configuration](vercel.json) rewrites API requests and both guide routes. It caches neighborhood responses at the CDN for one hour; semantic search remains uncached. The site has not been deployed permanently. After a deployment, verify the CDN with real responses and the `x-vercel-cache` header (`MISS`, then `HIT`).
 
 ## Use the app
 

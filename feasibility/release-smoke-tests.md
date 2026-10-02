@@ -18,7 +18,7 @@ The results below describe the current TheoremGraph graph snapshot and detector 
 
 ## Preview deployment checks
 
-1. Open the preview root and `/how-it-works` directly. Both should serve the app, including after a reload. Confirm that `/method-markers.json` returns the committed index and that the browser only loads it when a method question is analysed.
+1. Open the preview root, `/how-it-works`, and `/principle` directly. All should serve the app, including after a reload. Confirm that `/method-markers.json` returns the committed index and that the browser only loads it when a method question is analysed.
 2. Run cases 1, 3, 5 and 7 in the preview browser. Verify candidate confirmation, result status, the path, graph inspection, and JSON export.
 3. Request `/tg/graph/statement/66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8?direction=src&formality=formal` through the preview host. Expect HTTP 200 JSON; inspect `x-vercel-cache` on two identical requests to verify the configured CDN behavior. Request `/tg/graph/embedding` with a mathematical query and verify the semantic search flow.
 4. Simulate a failed `/method-markers.json` request and a failed or rate-limited `/tg` request. The UI should show incomplete evidence or an API error, not `No marker observed` as a definitive answer.
