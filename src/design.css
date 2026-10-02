@@ -274,5 +274,21 @@ footer span:first-child { font: 600 20px 'Newsreader', serif; color: var(--green
 .diagnostics { margin: 18px 0; }
 .diagnostics .candidate-metrics { margin-top: 4px; font-size: 11px; }
 .candidate-select, .selected-item button, .objective-form button { min-height: 40px; min-width: 40px; }
+.intro-only .site-header nav, .intro-only footer { display: none; }
+.intro-only .intro { min-height: calc(100svh - 76px); max-width: 1000px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding-top: 40px; padding-bottom: 80px; }
+.intro-only .intro::after { display: none; }
+.intro-only .intro h1 { max-width: 780px; margin: 0 0 36px; font-size: clamp(55px, 7vw, 92px); line-height: 1.02; }
+.intro-cta { min-height: 50px; display: inline-flex; align-items: center; gap: 32px; padding: 0 20px; border: 1px solid var(--green); background: var(--green); color: #fff; font-size: 13px; font-weight: 700; }
+.intro-cta:hover { background: #1d4734; }
+.app-shell:not(.intro-only) .intro { padding-top: 35px; padding-bottom: 28px; }
+.app-shell:not(.intro-only) .intro::after { display: none; }
+.app-shell:not(.intro-only) .intro h1 { font-size: clamp(38px, 4.5vw, 55px); margin: 0; }
+.selected-details { margin-top: 15px; color: #526357; font-size: 12px; }
+.selected-details summary { cursor: pointer; font-weight: 700; min-height: 32px; }
+.selected-details .source-row { margin-top: 12px; }
+.confirmed-section { padding-bottom: 0; }
+.objective-section { margin-top: 24px; }
+@media (max-width: 790px) { .intro-only .intro { min-height: calc(100svh - 64px); } }
+@media (max-width: 540px) { .intro-only .intro h1 { font-size: clamp(47px, 13vw, 68px); } .intro-only .intro { padding-bottom: 80px; } }
 #results-title:focus { outline: 2px solid #3b7756; outline-offset: 4px; }
 @media (max-width: 600px) { .result-actions { gap: 8px; } .result-actions .secondary-button { min-height: 44px; } }

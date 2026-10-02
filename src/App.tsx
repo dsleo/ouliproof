@@ -94,6 +94,7 @@ function QuestionCard({ objective, state, theorem, index, indexStatus, onInspect
 
 function App() {
   const [query, setQuery] = useState(initial.query)
+  const [searchOpen, setSearchOpen] = useState(Boolean(initial.query || initial.linkedId || initial.objectives.length))
   const [draft, setDraft] = useState('')
   const [objectives, setObjectives] = useState<Objective[]>(initial.objectives)
   const [searchStatus, setSearchStatus] = useState<SearchStatus>('idle')
@@ -116,6 +117,7 @@ function App() {
   const [indexError, setIndexError] = useState('')
   const [graphFocus, setGraphFocus] = useState<{ id: string; policy: Policy; serial: number } | undefined>()
   const searchController = useRef<AbortController | null>(null)
+  const searchInput = useRef<HTMLInputElement>(null)
   const searchSerial = useRef(0)
   const hydrationTail = useRef<Promise<void>>(Promise.resolve())
   const explorer = useRef(new Explorer(client, setStates))
@@ -123,7 +125,11 @@ function App() {
   const activeStates = Array.from(states.values())
   const isRunning = activeStates.some((state) => state.status === 'running')
   const canResume = activeStates.some((state) => state.status === 'paused' || state.status === 'error')
-  const pageStep = analysisStarted ? 3 : confirmed || searchStatus === 'ready' ? 2 : 1
+
+  function openSearch() {
+    setSearchOpen(true)
+    window.setTimeout(() => { document.getElementById('query-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); searchInput.current?.focus({ preventScroll: true }) }, 30)
+  }
 
   useEffect(() => () => { searchController.current?.abort(); explorer.current.cancel() }, [])
 
@@ -312,21 +318,16 @@ function App() {
     setShareMessage('Evidence JSON downloaded. This file freezes the current findings and traversal status.')
   }
 
-  return <div className="app-shell">
+  return <div className={`app-shell ${searchOpen ? '' : 'intro-only'}`}>
     <SiteHeader />
 
     <main>
       <section className="intro" aria-labelledby="page-title">
-        <div className="intro-kicker"><span className="line" /> Mathlib dependency explorer</div>
-        <h1 id="page-title">Follow the <em>proof trail.</em></h1>
-        <p>Find a Mathlib result, then trace where induction, case analysis, contradiction, or a named dependency appears in its proof chain.</p>
+        <h1 id="page-title">Mathlib <em>dependency explorer.</em></h1>
+        {!searchOpen && <button type="button" className="intro-cta" onClick={openSearch}>Search a result <ArrowRight size={18} aria-hidden="true" /></button>}
       </section>
 
-      <section className="workspace" aria-label="Theorem analysis">
-        <div className="step-rail" aria-label="Steps">
-          <span className={pageStep === 1 ? 'current' : 'done'}><b>01</b> Search</span><span className={pageStep === 2 ? 'current' : pageStep === 3 ? 'done' : ''}><b>02</b> Confirm</span><span className={pageStep === 3 ? 'current' : ''}><b>03</b> Explore</span>
-        </div>
-
+      {searchOpen && <section className="workspace" aria-label="Theorem analysis">
         <div className="workspace-grid">
           <div className="main-column">
             <section className="form-section" aria-labelledby="query-title">
@@ -335,7 +336,7 @@ function App() {
               <p className="section-intro">Enter a Lean name or describe the mathematical result. You will confirm the exact declaration before exploring it.</p>
               <form className="search-form" onSubmit={(event) => { event.preventDefault(); void search() }}>
                 <Search size={19} aria-hidden="true" />
-                <input aria-label="Lean name or mathematical description" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="e.g. Nat.add_comm or a prime dividing a product" />
+                <input ref={searchInput} aria-label="Lean name or mathematical description" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="e.g. Nat.add_comm or a prime dividing a product" />
                 <button type="submit" aria-label="Search" disabled={!query.trim() || searchStatus === 'searching'}>{searchStatus === 'searching' ? <LoaderCircle size={17} className="spin" /> : <ArrowRight size={17} />}<span>Search</span></button>
               </form>
               <div className="example-line">Try <button type="button" onClick={() => setQuery('Nat.add_comm')}>Nat.add_comm</button><button type="button" onClick={() => setQuery('if a prime number divides a product then it divides one of the factors')}>Euclid’s lemma</button><button type="button" onClick={() => setQuery('continuous function on a compact interval attains its maximum')}>maximum on a compact interval</button></div>
@@ -345,8 +346,12 @@ function App() {
               {searchStatus === 'error' && <div className="inline-state error" role="alert">{searchError} <button onClick={() => void search()}>Try again</button></div>}
             </section>
 
-            <section className="form-section objective-section" aria-labelledby="objective-title">
-              <div className="section-label"><span>02 / QUESTION</span><span>Ask one or more</span></div>
+            {searchStatus === 'ready' && !confirmed && <section className="candidate-section" aria-labelledby="candidate-title"><div className="section-label"><span>02 / CONFIRM RESULT</span><span>Choose a declaration</span></div><h2 id="candidate-title">Which declaration did you mean?</h2><p className="section-intro">Results are ranked by similarity. Confirm the Lean declaration before choosing a question.</p>{/^[A-Za-z_][A-Za-z0-9_'.]*\.[A-Za-z_][A-Za-z0-9_'.]*$/.test(query.trim()) && !candidates.some((candidate) => candidate.name === query.trim()) && visibleCandidates >= candidates.length && candidates.every((candidate) => !candidate.loading) && <p className="search-advice"><code>{query.trim()}</code> did not appear in these results. Semantic search can miss an exact Lean name; try describing the mathematics instead.</p>}<div className="candidate-list">{candidates.slice(0, visibleCandidates).map((candidate, index) => <article className="candidate" key={candidate.id}><div className="candidate-index">{String(index + 1).padStart(2, '0')}</div><div className="candidate-body"><div className="candidate-top"><h3>{candidate.loading ? 'Loading name…' : candidate.name}</h3><span>{candidate.sourceLabel}</span></div>{candidate.body && <p className="formal-body">{candidate.body}</p>}{candidate.slogan && <p>{candidate.slogan}</p>}{candidate.error && <p className="candidate-error">Name unavailable: {candidate.error}</p>}<small>{candidate.id}</small></div><button className="candidate-select" type="button" disabled={candidate.loading || Boolean(candidate.error)} onClick={() => confirm(candidate)}>{candidate.loading ? <LoaderCircle className="spin" size={15} /> : <>Select <ArrowRight size={15} /></>}</button></article>)}</div>{visibleCandidates < candidates.length && <button type="button" className="candidate-more" onClick={showMoreCandidates}>Show {candidates.length - visibleCandidates} more results <ArrowDown size={15} /></button>}<details className="diagnostics"><summary>Search diagnostics</summary><p className="candidate-metrics">Search: {searchMilliseconds ?? '—'} ms · Name loading: {hydrationMilliseconds} ms · Neighborhoods: {client.cacheStats().memoryHits} memory, {client.cacheStats().browserHits} browser, {client.cacheStats().networkRequests} API calls{client.cacheStats().rateLimits > 0 ? ` · ${client.cacheStats().rateLimits} rate limits` : ''}</p></details></section>}
+
+            {confirmed && <section className="confirmed-section" aria-labelledby="confirmed-title"><div className="section-label"><span>02 / SELECTED RESULT</span><button type="button" className="text-action" onClick={() => { explorer.current.cancel(); setConfirmed(null); setAnalysisStarted(false); setStates(new Map()) }}><ArrowLeft size={14} /> Change result</button></div><div className="confirmed-heading"><h2 id="confirmed-title">{confirmed.name}</h2><span className="check-seal"><Check size={19} /></span></div>{confirmed.slogan && <p className="confirmed-slogan">{confirmed.slogan}</p>}<details className="selected-details"><summary>Declaration details</summary>{confirmed.body && <p className="confirmed-statement">{confirmed.body}</p>}<div className="source-row"><span>Source: {confirmed.sourceLabel ?? 'TheoremGraph'}</span><span>ID: {confirmed.id}</span></div></details></section>}
+
+            {confirmed && <><section className="form-section objective-section" aria-labelledby="objective-title">
+              <div className="section-label"><span>03 / QUESTION</span><span>Ask one or more</span></div>
               <h2 id="objective-title">What would you like to detect?</h2>
               <p className="section-intro">Choose methods to look for across the dependency chain, or enter a precise Lean declaration.</p>
               <div className="suggestions" aria-label="Suggested questions">{SUGGESTIONS.map((item) => <button type="button" key={item.value} onClick={() => addAndRefresh(item.value)}><Plus size={14} /><span>{item.label}</span><small>{item.caption}</small></button>)}</div>
@@ -355,11 +360,10 @@ function App() {
                 <div><input id="objective-input" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="e.g. depends on Nat.zero_add" /><button type="submit" disabled={!draft.trim()} aria-label="Add question"><Plus size={18} /></button></div>
               </form>
               {objectives.length > 0 && <div className="selected-questions"><h3>Selected questions <span>{objectives.length}</span></h3>{objectives.map((objective) => <div className="selected-item" key={objective.id}><div><strong>{objective.original}</strong><p>{objective.interpretation}</p><span className={objective.capability === 'unavailable' ? 'capability no' : 'capability'}>{objective.capability === 'unavailable' ? 'No detector' : objective.capability === 'hint' ? 'Graph + source signal' : policyName(objective.policy)}</span></div><button type="button" onClick={() => removeObjective(objective.id)} aria-label={`Remove ${objective.original}`}><X size={16} /></button></div>)}</div>}
+              {!analysisStarted && <div className="confirm-actions"><p>{objectives.length ? `${objectives.length} question${objectives.length > 1 ? 's' : ''} ready to explore.` : 'Choose at least one question to continue.'}</p><button type="button" className="primary-button" disabled={!objectives.length} onClick={() => void begin()}>Explore dependencies <ArrowRight size={17} /></button></div>}
             </section>
 
-            {searchStatus === 'ready' && !confirmed && <section className="candidate-section" aria-labelledby="candidate-title"><div className="section-label"><span>03 / CONFIRMATION</span><span>Choose a declaration</span></div><h2 id="candidate-title">Which declaration did you mean?</h2><p className="section-intro">Results are ranked by similarity, not exact name matching. Check the Lean name and summary before continuing.</p>{/^[A-Za-z_][A-Za-z0-9_'.]*\.[A-Za-z_][A-Za-z0-9_'.]*$/.test(query.trim()) && !candidates.some((candidate) => candidate.name === query.trim()) && visibleCandidates >= candidates.length && candidates.every((candidate) => !candidate.loading) && <p className="search-advice"><code>{query.trim()}</code> did not appear in these results. Semantic search can miss an exact Lean name; try describing the mathematics instead.</p>}<div className="candidate-list">{candidates.slice(0, visibleCandidates).map((candidate, index) => <article className="candidate" key={candidate.id}><div className="candidate-index">{String(index + 1).padStart(2, '0')}</div><div className="candidate-body"><div className="candidate-top"><h3>{candidate.loading ? 'Loading name…' : candidate.name}</h3><span>{candidate.sourceLabel}</span></div>{candidate.body && <p className="formal-body">{candidate.body}</p>}{candidate.slogan && <p>{candidate.slogan}</p>}{candidate.error && <p className="candidate-error">Name unavailable: {candidate.error}</p>}<small>{candidate.id}</small></div><button className="candidate-select" type="button" disabled={candidate.loading || Boolean(candidate.error)} onClick={() => confirm(candidate)}>{candidate.loading ? <LoaderCircle className="spin" size={15} /> : <>Select <ArrowRight size={15} /></>}</button></article>)}</div>{visibleCandidates < candidates.length && <button type="button" className="candidate-more" onClick={showMoreCandidates}>Show {candidates.length - visibleCandidates} more results <ArrowDown size={15} /></button>}<p className="candidate-metrics">Search: {searchMilliseconds ?? '—'} ms · Name loading: {hydrationMilliseconds} ms · Neighborhoods: {client.cacheStats().memoryHits} memory, {client.cacheStats().browserHits} browser, {client.cacheStats().networkRequests} API calls{client.cacheStats().rateLimits > 0 ? ` · ${client.cacheStats().rateLimits} rate limits` : ''}</p></section>}
-
-            {confirmed && <section className="confirmed-section" aria-labelledby="confirmed-title"><div className="section-label"><span>03 / CONFIRMED DECLARATION</span><button type="button" className="text-action" onClick={() => { explorer.current.cancel(); setConfirmed(null); setAnalysisStarted(false); setStates(new Map()) }}><ArrowLeft size={14} /> Change</button></div><div className="confirmed-heading"><div><p className="eyebrow">Your selection</p><h2 id="confirmed-title">{confirmed.name}</h2></div><span className="check-seal"><Check size={19} /></span></div>{confirmed.body && <p className="confirmed-statement">{confirmed.body}</p>}{confirmed.slogan && <p className="confirmed-slogan">{confirmed.slogan}</p>}<div className="source-row"><span>Source: {confirmed.sourceLabel ?? 'TheoremGraph'}</span><span>ID: {confirmed.id}</span></div>{!analysisStarted && <div className="confirm-actions"><p>{objectives.length ? `${objectives.length} question${objectives.length > 1 ? 's' : ''} ready to explore.` : 'Add at least one question above to get started.'}</p><button className="primary-button" disabled={!objectives.length} onClick={() => void begin()}>Explore dependencies <ArrowRight size={17} /></button></div>}</section>}
+            </>}
 
             {analysisStarted && confirmed && <section className="results" aria-labelledby="results-title"><div className="section-label"><span>04 / FINDINGS</span><span>Live TheoremGraph API</span></div><div className="results-heading"><div><h2 id="results-title" tabIndex={-1}>What the graph shows</h2><p>A path shows an observed reference. It does not reconstruct the Lean proof script.</p></div><div className="result-actions">{isRunning && <button type="button" className="secondary-button" onClick={() => { explorer.current.pause(); setPauseRequested(true) }}><Pause size={15} /> {pauseRequested ? 'Pausing' : 'Pause'}</button>}{!isRunning && canResume && <button type="button" className="secondary-button" onClick={() => { explorer.current.resume(); setPauseRequested(false) }}><Play size={15} /> Resume</button>}<button type="button" className="secondary-button" onClick={() => void share()}>{copied ? <Check size={15} /> : <Copy size={15} />} Copy query link</button><button type="button" className="secondary-button" onClick={exportResult}><Download size={15} /> Export evidence JSON</button></div></div>
               <p className="sharing-help">A query link reruns against live sources. The JSON file records the evidence currently shown.</p>{shareMessage && <p className="share-message" role="status">{shareMessage}</p>}{shareFallback && <label className="share-fallback">Query link<input readOnly value={shareFallback} onFocus={(event) => event.currentTarget.select()} /></label>}
@@ -374,7 +378,7 @@ function App() {
           </div>
 
         </div>
-      </section>
+      </section>}
     </main>
     <SiteFooter />
   </div>
