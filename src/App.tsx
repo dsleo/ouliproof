@@ -52,7 +52,7 @@ function EvidenceItem({ evidence, theorem, onInspect }: { evidence: Evidence; th
         <span className="path-node" title={step.id}>{step.name}</span>
       </li>)}
     </ol>
-    <div className="evidence-meta"><span>{evidence.source} · {evidence.source === 'MathlibGraph' ? `Mathlib ${evidence.sourceRevision?.slice(0, 12)}` : evidence.graphSourceLabel ?? 'version unspecified'}</span><span>Rule: {evidence.ruleId}</span>{evidence.joinStatus && <span>Join: {evidence.joinStatus === 'different-version' ? 'different snapshot labels' : 'same proof unverified'}</span>}</div>
+    <details className="evidence-details"><summary>Evidence details</summary><div className="evidence-meta"><span>{evidence.source} · {evidence.source === 'MathlibGraph' ? `Mathlib ${evidence.sourceRevision?.slice(0, 12)}` : evidence.graphSourceLabel ?? 'version unspecified'}</span><span>Rule: {evidence.ruleId}</span>{evidence.joinStatus && <span>Join: {evidence.joinStatus === 'different-version' ? 'different snapshot labels' : 'same proof unverified'}</span>}</div></details>
     <button type="button" className="evidence-inspect" onClick={() => onInspect(evidence.path[evidence.path.length - 1].id)}>Inspect in graph <ArrowRight size={13} /></button>
   </div>
 }
@@ -79,7 +79,7 @@ function QuestionCard({ objective, state, theorem, index, indexStatus, onInspect
       {unsupported ? (
         <p className="answer-note">This request has no reviewed detector. Enter a full Lean declaration name or choose one of the method questions.</p>
       ) : primary || related ? (
-        <>{evidence.slice(0, 3).map((item) => <EvidenceItem key={item.id} evidence={item} theorem={theorem} onInspect={(id) => onInspect(id, objective.policy ?? 'proof')} />)}{evidence.length > 3 && <p className="fine-print">{evidence.length - 3} more signals found in the explored portion of the graph.</p>}{state?.completionReason === 'witnesses' ? <p className="fine-print">Stopped after the first signals for all selected questions. Continue exploring to see more of the graph.</p> : state?.status !== 'complete' && <p className="fine-print">Exploration is still incomplete.</p>}</>
+        <>{primary && <EvidenceItem evidence={primary} theorem={theorem} onInspect={(id) => onInspect(id, objective.policy ?? 'proof')} />}{!primary && related && <EvidenceItem evidence={related} theorem={theorem} onInspect={(id) => onInspect(id, objective.policy ?? 'proof')} />}{evidence.length > 1 && <details className="more-evidence"><summary>{evidence.length - 1} additional signal{evidence.length > 2 ? 's' : ''}</summary>{evidence.filter((item) => item.id !== (primary ?? related)?.id).map((item) => <EvidenceItem key={item.id} evidence={item} theorem={theorem} onInspect={(id) => onInspect(id, objective.policy ?? 'proof')} />)}</details>}{state?.completionReason === 'witnesses' ? <p className="fine-print">Stopped after the first signals for all selected questions. Continue exploring to see more of the graph.</p> : state?.status !== 'complete' && <p className="fine-print">Exploration is still incomplete.</p>}</>
       ) : exhausted ? (
         <p className="answer-note">{indexMissing ? 'Recorded tactics could not be checked. ' : ''}No matching graph marker appeared in {state.visited.size} checked declarations. The detector and source coverage cannot establish that this method is absent.</p>
       ) : state?.status === 'limited' ? (
@@ -106,6 +106,10 @@ function App() {
   const [analysisStarted, setAnalysisStarted] = useState(false)
   const [states, setStates] = useState<Map<Policy, TraversalState>>(new Map())
   const [copied, setCopied] = useState(false)
+  const [shareMessage, setShareMessage] = useState('')
+  const [shareFallback, setShareFallback] = useState('')
+  const [searchSeconds, setSearchSeconds] = useState(0)
+  const [searchNotice, setSearchNotice] = useState('')
   const [pauseRequested, setPauseRequested] = useState(false)
   const [methodIndex, setMethodIndex] = useState<MethodIndex | undefined>()
   const [indexStatus, setIndexStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
@@ -124,20 +128,29 @@ function App() {
   useEffect(() => () => { searchController.current?.abort(); explorer.current.cancel() }, [])
 
   useEffect(() => {
+    if (searchStatus !== 'searching') return
+    const started = Date.now()
+    const timer = window.setInterval(() => setSearchSeconds(Math.floor((Date.now() - started) / 1000)), 1000)
+    return () => window.clearInterval(timer)
+  }, [searchStatus])
+
+  useEffect(() => {
     const id = initial.linkedId
     if (!id) return
     let live = true
     setSearchStatus('searching')
-    void client.neighborhood(id).then(({ root }) => {
-      if (!live) return
+    const controller = new AbortController()
+    searchController.current = controller
+    void client.neighborhood(id, controller.signal).then(({ root }) => {
+      if (!live || controller.signal.aborted) return
       setCandidates([{ ...root, score: 0, loading: false }])
       setSearchStatus('ready')
     }).catch((error) => {
-      if (!live) return
+      if (!live || controller.signal.aborted) return
       setSearchStatus('error')
       setSearchError(`The linked declaration could not be loaded: ${formatError(error)}`)
     })
-    return () => { live = false }
+    return () => { live = false; controller.abort() }
   }, [])
 
   function resetAnalysis(nextObjectives = objectives, index = methodIndex) {
@@ -204,6 +217,8 @@ function App() {
     setSearchMilliseconds(null)
     setHydrationMilliseconds(0)
     setSearchError('')
+    setSearchNotice('')
+    setSearchSeconds(0)
     setSearchStatus('searching')
     const controller = new AbortController()
     searchController.current = controller
@@ -223,6 +238,13 @@ function App() {
       setSearchStatus('error')
       setSearchError(formatError(error))
     }
+  }
+
+  function cancelSearch() {
+    searchController.current?.abort()
+    searchSerial.current++
+    setSearchStatus('idle')
+    setSearchNotice('Search cancelled. Your query is still here.')
   }
 
   function confirm(candidate: Candidate) {
@@ -253,17 +275,26 @@ function App() {
       }
     }
     resetAnalysis(objectives, index)
-    window.setTimeout(() => document.getElementById('results-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30)
+    window.setTimeout(() => { const title = document.getElementById('results-title'); title?.scrollIntoView({ behavior: 'smooth', block: 'start' }); title?.focus({ preventScroll: true }) }, 30)
   }
 
-  function share() {
+  async function share() {
     if (!confirmed) return
     const url = new URL(window.location.href)
     url.search = ''
     url.searchParams.set('q', query)
     url.searchParams.set('id', confirmed.id)
     for (const objective of objectives) url.searchParams.append('detect', objective.original)
-    void navigator.clipboard.writeText(url.toString()).then(() => { setCopied(true); window.setTimeout(() => setCopied(false), 2500) })
+    try {
+      await navigator.clipboard.writeText(url.toString())
+      setCopied(true)
+      setShareFallback('')
+      setShareMessage('Query link copied. Opening it loads live data; the recipient confirms the declaration before analysis.')
+      window.setTimeout(() => setCopied(false), 2500)
+    } catch {
+      setShareFallback(url.toString())
+      setShareMessage('Clipboard access was unavailable. Copy the link from the field below.')
+    }
   }
 
   function exportResult() {
@@ -278,6 +309,7 @@ function App() {
       }),
       note: 'Observation of the graph returned by the API, not a Lean proof certificate.',
     })
+    setShareMessage('Evidence JSON downloaded. This file freezes the current findings and traversal status.')
   }
 
   return <div className="app-shell">
@@ -307,7 +339,8 @@ function App() {
                 <button type="submit" aria-label="Search" disabled={!query.trim() || searchStatus === 'searching'}>{searchStatus === 'searching' ? <LoaderCircle size={17} className="spin" /> : <ArrowRight size={17} />}<span>Search</span></button>
               </form>
               <div className="example-line">Try <button type="button" onClick={() => setQuery('Nat.add_comm')}>Nat.add_comm</button><button type="button" onClick={() => setQuery('if a prime number divides a product then it divides one of the factors')}>Euclid’s lemma</button><button type="button" onClick={() => setQuery('continuous function on a compact interval attains its maximum')}>maximum on a compact interval</button></div>
-              {searchStatus === 'searching' && <div className="inline-state" role="status"><LoaderCircle size={16} className="spin" /> Searching TheoremGraph. This may take a few seconds.</div>}
+              {searchStatus === 'searching' && <div className="inline-state search-progress" role="status"><LoaderCircle size={16} className="spin" /><span>{searchSeconds < 10 ? 'Searching TheoremGraph…' : `Still searching TheoremGraph (${Math.floor(searchSeconds / 5) * 5}s). Semantic search can be slow.`}</span><button type="button" onClick={cancelSearch}>Cancel search</button></div>}
+              {searchNotice && searchStatus === 'idle' && <div className="inline-state" role="status">{searchNotice}</div>}
               {searchStatus === 'empty' && <div className="inline-state">No Mathlib declarations appeared among the first results. Try a different name or a more precise description.</div>}
               {searchStatus === 'error' && <div className="inline-state error" role="alert">{searchError} <button onClick={() => void search()}>Try again</button></div>}
             </section>
@@ -328,12 +361,13 @@ function App() {
 
             {confirmed && <section className="confirmed-section" aria-labelledby="confirmed-title"><div className="section-label"><span>03 / CONFIRMED DECLARATION</span><button type="button" className="text-action" onClick={() => { explorer.current.cancel(); setConfirmed(null); setAnalysisStarted(false); setStates(new Map()) }}><ArrowLeft size={14} /> Change</button></div><div className="confirmed-heading"><div><p className="eyebrow">Your selection</p><h2 id="confirmed-title">{confirmed.name}</h2></div><span className="check-seal"><Check size={19} /></span></div>{confirmed.body && <p className="confirmed-statement">{confirmed.body}</p>}{confirmed.slogan && <p className="confirmed-slogan">{confirmed.slogan}</p>}<div className="source-row"><span>Source: {confirmed.sourceLabel ?? 'TheoremGraph'}</span><span>ID: {confirmed.id}</span></div>{!analysisStarted && <div className="confirm-actions"><p>{objectives.length ? `${objectives.length} question${objectives.length > 1 ? 's' : ''} ready to explore.` : 'Add at least one question above to get started.'}</p><button className="primary-button" disabled={!objectives.length} onClick={() => void begin()}>Explore dependencies <ArrowRight size={17} /></button></div>}</section>}
 
-            {analysisStarted && confirmed && <section className="results" aria-labelledby="results-title"><div className="section-label"><span>04 / FINDINGS</span><span>Live TheoremGraph API</span></div><div className="results-heading"><div><h2 id="results-title">What the graph shows</h2><p>A path shows an observed reference. It does not reconstruct the Lean proof script.</p></div><div className="result-actions">{isRunning && <button type="button" className="secondary-button" onClick={() => { explorer.current.pause(); setPauseRequested(true) }}><Pause size={15} /> {pauseRequested ? 'Pausing' : 'Pause'}</button>}{!isRunning && canResume && <button type="button" className="secondary-button" onClick={() => { explorer.current.resume(); setPauseRequested(false) }}><Play size={15} /> Resume</button>}<button type="button" className="icon-button" title="Copy link" aria-label="Copy link" onClick={share}>{copied ? <Check size={17} /> : <Copy size={17} />}</button><button type="button" className="icon-button" title="Export JSON" aria-label="Export JSON" onClick={exportResult}><Download size={17} /></button></div></div>
+            {analysisStarted && confirmed && <section className="results" aria-labelledby="results-title"><div className="section-label"><span>04 / FINDINGS</span><span>Live TheoremGraph API</span></div><div className="results-heading"><div><h2 id="results-title" tabIndex={-1}>What the graph shows</h2><p>A path shows an observed reference. It does not reconstruct the Lean proof script.</p></div><div className="result-actions">{isRunning && <button type="button" className="secondary-button" onClick={() => { explorer.current.pause(); setPauseRequested(true) }}><Pause size={15} /> {pauseRequested ? 'Pausing' : 'Pause'}</button>}{!isRunning && canResume && <button type="button" className="secondary-button" onClick={() => { explorer.current.resume(); setPauseRequested(false) }}><Play size={15} /> Resume</button>}<button type="button" className="secondary-button" onClick={() => void share()}>{copied ? <Check size={15} /> : <Copy size={15} />} Copy query link</button><button type="button" className="secondary-button" onClick={exportResult}><Download size={15} /> Export evidence JSON</button></div></div>
+              <p className="sharing-help">A query link reruns against live sources. The JSON file records the evidence currently shown.</p>{shareMessage && <p className="share-message" role="status">{shareMessage}</p>}{shareFallback && <label className="share-fallback">Query link<input readOnly value={shareFallback} onFocus={(event) => event.currentTarget.select()} /></label>}
               {indexStatus === 'loading' && <div className="inline-state" role="status"><LoaderCircle size={16} className="spin" /> Loading the compact MathlibGraph method index…</div>}
               {indexStatus === 'error' && <div className="inline-state error" role="alert">Recorded tactic evidence is unavailable: {indexError} Graph-reference detectors can still run. <button type="button" onClick={() => { void loadMethodIndex().then((index) => { setMethodIndex(index); setIndexStatus('ready'); setIndexError(''); explorer.current.setMethodIndex(index) }).catch((error) => setIndexError(formatError(error))) }}>Retry index</button></div>}
               {activeStates.length > 0 && <div className="progress-strip" role="status">{activeStates.map((state) => <div key={state.policy}><span className={`tiny-dot ${state.status}`} /><strong>{POLICY_LABEL[state.policy]}</strong><span>{state.visited.size} checked · {state.frontier.length} pending</span><em>{state.status === 'complete' ? state.completionReason === 'witnesses' ? 'First signals found' : 'Traversal complete' : state.status === 'running' ? 'Running' : state.status === 'paused' ? 'Paused' : state.status === 'limited' ? 'Limit reached' : state.status === 'error' ? 'Error' : 'Ready'}</em></div>)}</div>}
-              <p className="candidate-metrics">Search: {searchMilliseconds ?? '—'} ms · Name loading: {hydrationMilliseconds} ms · Traversal: {activeStates.map((state) => `${POLICY_LABEL[state.policy]} ${Math.round(state.elapsedMs)} ms / ${state.requests} requests`).join(' ; ') || '—'} · Cache: {client.cacheStats().memoryHits} memory, {client.cacheStats().browserHits} browser, {client.cacheStats().networkRequests} API calls</p>
               <div className="answers">{objectives.map((objective) => <QuestionCard key={objective.id} objective={objective} state={objective.policy ? states.get(objective.policy) : undefined} theorem={confirmed} index={methodIndex} indexStatus={indexStatus} onInspect={(id, policy) => { setGraphFocus({ id, policy, serial: Date.now() }); document.getElementById('graph-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }} />)}</div>
+              <details className="diagnostics"><summary>Search and traversal diagnostics</summary><p className="candidate-metrics">Search: {searchMilliseconds ?? '—'} ms · Name loading: {hydrationMilliseconds} ms · Traversal: {activeStates.map((state) => `${POLICY_LABEL[state.policy]} ${Math.round(state.elapsedMs)} ms / ${state.requests} requests`).join(' ; ') || '—'} · Cache: {client.cacheStats().memoryHits} memory, {client.cacheStats().browserHits} browser, {client.cacheStats().networkRequests} API calls</p></details>
               <GraphExplorer states={states} root={confirmed} onContinue={(policy) => explorer.current.continueAfterWitness(policy)} canContinue={!isRunning} focusRequest={graphFocus} evidencePaths={objectives.flatMap((objective) => objective.policy ? findEvidence(states.get(objective.policy), objective, methodIndex).map((item) => ({ policy: objective.policy!, path: item.path })) : [])} />
               <div className="results-footnote"><CircleHelp size={16} /><p>Graph references and recorded tactics are different evidence. MathlibGraph tactic records remain possible leads until their proof revision can be matched to TheoremGraph. No marker observed does not establish absence of a method. <a href={MARKER_SOURCE_URL} target="_blank" rel="noreferrer">Method data source ↗</a></p></div>
             </section>}

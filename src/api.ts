@@ -83,6 +83,14 @@ function subscribe<T>(entry: SharedRequest<T>, signal: AbortSignal | undefined, 
   })
 }
 
+export function safeSourceUrl(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' ? url.toString() : undefined
+  } catch { return undefined }
+}
+
 export function normalizeNeighborhood(value: unknown, expectedId: string): Neighborhood {
   const data = object(value)
   const rootRaw = object(data?.root)
@@ -92,7 +100,7 @@ export function normalizeNeighborhood(value: unknown, expectedId: string): Neigh
     throw new ApiError('The TheoremGraph response format has changed or the declaration does not match.')
   }
   const sourceLabel = string(statement?.paper_external_id) ?? string(paper?.external_id) ?? string(statement?.paper_title)
-  const root: Declaration = { id: expectedId, name: rootRaw.name as string, kind: string(statement?.kind), body: string(statement?.body), source: string(paper?.source), sourceLabel }
+  const root: Declaration = { id: expectedId, name: rootRaw.name as string, kind: string(statement?.kind), body: string(statement?.body), source: safeSourceUrl(paper?.source), sourceLabel }
   const nodes = new Map<string, Declaration>([[expectedId, root]])
   for (const raw of data.nodes) {
     const node = object(raw)
@@ -136,7 +144,7 @@ export class TheoremGraphClient {
       const id = string(row?.statement_id)
       const sourceLabel = string(row?.external_id) ?? string(row?.title)
       if (!id || !UUID.test(id) || !sourceLabel || !/^Mathlib/i.test(sourceLabel) || found.has(id)) continue
-      found.set(id, { id, name: string(row?.name) ?? 'Declaration', body: string(row?.body), slogan: string(row?.slogan), source: string(row?.source), sourceLabel, score: typeof row?.score === 'number' ? row.score : 0, loading: true })
+      found.set(id, { id, name: string(row?.name) ?? 'Declaration', body: string(row?.body), slogan: string(row?.slogan), source: safeSourceUrl(row?.source), sourceLabel, score: typeof row?.score === 'number' ? row.score : 0, loading: true })
       if (found.size === 10) break
     }
     return Array.from(found.values())

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { normalizeNeighborhood, TheoremGraphClient } from './api'
+import { normalizeNeighborhood, safeSourceUrl, TheoremGraphClient } from './api'
 import type { Declaration, Neighborhood, Objective, TraversalState } from './domain'
 import { Explorer, findWitness } from './explorer'
 import { interpretObjective } from './objectives'
@@ -10,6 +10,15 @@ const IDS = {
   indefinite: '900586fb-f641-490a-88d5-e93467529e57',
   choice: '7b185410-dd7e-483a-b914-98d71aa2e23b',
 }
+
+describe('source links', () => {
+  it('only accepts absolute HTTPS URLs', () => {
+    expect(safeSourceUrl('Lean Repo')).toBeUndefined()
+    expect(safeSourceUrl('/Lean Repo')).toBeUndefined()
+    expect(safeSourceUrl('javascript:alert(1)')).toBeUndefined()
+    expect(safeSourceUrl('https://github.com/leanprover-community/mathlib4')).toBe('https://github.com/leanprover-community/mathlib4')
+  })
+})
 
 const declarations: Declaration[] = [
   { id: IDS.em, name: 'Classical.em' },

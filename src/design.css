@@ -253,3 +253,26 @@ footer span:first-child { font: 600 20px 'Newsreader', serif; color: var(--green
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+.step-rail, .candidate-index, .candidate-body small, .eyebrow, .source-row, .evidence-meta, .fine-print, .answer-footer, .results-footnote, .witness-title span, .edge-type { color: #526357; }
+.section-label, .section-label span:last-child, .example-line, .suggestions small, .objective-form label, .selected-questions h3, .selected-item p, .candidate-top span, .candidate-metrics, .confirm-actions p, .results-heading p, .interpretation, .progress-strip > div, .graph-section-head p:last-child { color: #526357; }
+.search-form input::placeholder, .objective-form input::placeholder { color: #526357; opacity: 1; }
+.step-rail { font-size: 12px; }
+.candidate-index, .candidate-body small, .source-row, .evidence-meta, .answer-footer { font-size: 11px; }
+.eyebrow, .fine-print, .results-footnote p, .witness-title span, .edge-type { font-size: 12px; }
+.result-actions { flex-wrap: wrap; }
+.result-actions .secondary-button { min-height: 40px; height: auto; padding: 8px 10px; }
+.search-progress { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.search-progress button { margin-left: auto; min-height: 40px; }
+.sharing-help, .share-message { margin: 10px 0 0; color: #526357; font-size: 12px; line-height: 1.5; }
+.share-message { color: #285b45; }
+.share-fallback { display: block; margin-top: 10px; color: #526357; font-size: 12px; }
+.share-fallback input { display: block; width: 100%; margin-top: 5px; padding: 9px; border: 1px solid #b6c4b4; background: #fffefa; color: #263e2d; }
+.evidence-details, .more-evidence, .diagnostics { margin-top: 13px; color: #526357; font-size: 12px; }
+.evidence-details summary, .more-evidence summary, .diagnostics summary { cursor: pointer; font-weight: 700; min-height: 28px; }
+.more-evidence { border-top: 1px solid #e7e9df; padding-top: 14px; }
+.more-evidence .witness { margin-top: 12px; }
+.diagnostics { margin: 18px 0; }
+.diagnostics .candidate-metrics { margin-top: 4px; font-size: 11px; }
+.candidate-select, .selected-item button, .objective-form button { min-height: 40px; min-width: 40px; }
+#results-title:focus { outline: 2px solid #3b7756; outline-offset: 4px; }
+@media (max-width: 600px) { .result-actions { gap: 8px; } .result-actions .secondary-button { min-height: 44px; } }
