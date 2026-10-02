@@ -85,9 +85,25 @@
 @media (max-width: 840px) { .graph-layout { grid-template-columns: minmax(0, 1fr) 190px; } .graph-section-head { display: block; } .graph-policy { display: inline-flex; margin-top: 12px; } }
 @media (max-width: 600px) { .graph-continue { display: block; } .graph-continue button { margin-top: 8px; } .graph-layout { display: flex; flex-direction: column; } .graph-viewport, .graph-list { height: 340px; } .graph-inspector { height: auto; max-height: 300px; border-left: 0; border-top: 1px solid #dfe6da; } .graph-dialog.expanded { inset: 0; width: 100vw; height: 100vh; } .graph-explorer.expanded .graph-layout { overflow: auto; } .graph-explorer.expanded .graph-viewport, .graph-explorer.expanded .graph-list { min-height: 45vh; height: 45vh; flex: none; } .graph-explorer.expanded .graph-inspector { height: auto; max-height: none; } .graph-toolbar { align-items: start; flex-wrap: wrap; } .graph-toolbar-title { width: 100%; } .graph-toolbar-actions { margin-left: auto; flex-wrap: wrap; } .graph-list button { grid-template-columns: 20px minmax(0, 1fr); } .graph-list small { grid-column: 2; } }
 .graph-toolbar-actions button { min-height: 40px; min-width: 40px; padding: 0 9px; }
-.graph-edges path.subdued { opacity: .18; }
-.graph-nodes g.subdued { opacity: .38; }
-.graph-nodes g.subdued:focus-visible, .graph-nodes g.subdued:hover { opacity: 1; }
 .graph-coverage, .graph-caption, .graph-node-meta, .graph-list small, .graph-list span, .graph-relations small { color: #526357; font-size: 11px; }
 .graph-relations strong, .graph-path strong, .graph-relations button code, .graph-path code { color: #526357; font-size: 10px; }
 .graph-list button { min-height: 44px; }
+.graph-close { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; color: #285b45; font-size: 12px; font-weight: 700; min-height: 40px; padding: 0 4px; }
+.graph-section-head h3 { margin-top: 0; }
+.graph-section > .graph-policy { margin-bottom: 12px; }
+.graph-more { margin-top: 14px; color: #526357; font-size: 12px; }
+.graph-more summary { cursor: pointer; font-weight: 700; min-height: 30px; }
+.graph-more .graph-continue { border-bottom: 1px solid #d5e1d0; margin-top: 7px; }
+.graph-explorer.witness-mode .graph-layout { min-height: 260px; }
+.graph-explorer.witness-mode .graph-viewport, .graph-explorer.witness-mode .graph-inspector { height: 260px; }
+.graph-explorer.witness-mode .graph-viewport { background-image: none; }
+.graph-explorer.witness-mode .graph-inspector { background: #fcfbf6; }
+.graph-explorer.witness-mode .graph-toolbar { min-height: 58px; }
+.graph-explorer.witness-mode .graph-caption { font-size: 12px; }
+.graph-summary { margin-top: 14px; color: #526357; font-size: 11px; }
+.graph-summary summary { cursor: pointer; font-weight: 700; }
+.graph-summary .graph-slogan { margin: 10px 0 0; }
+.graph-explorer.witness-long .graph-layout { min-height: 420px; }
+.graph-explorer.witness-long .graph-viewport, .graph-explorer.witness-long .graph-inspector { height: 420px; }
+.graph-explorer.expanded.witness-mode .graph-viewport, .graph-explorer.expanded.witness-mode .graph-inspector { height: 100%; }
+@media (max-width: 600px) { .graph-section-head { display: flex; align-items: start; } .graph-explorer.witness-mode .graph-inspector { height: auto; max-height: 220px; } .graph-explorer.witness-long .graph-viewport { height: 420px; } .graph-explorer.expanded.witness-mode .graph-viewport { min-height: 45vh; height: 45vh; } }
