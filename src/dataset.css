@@ -3,6 +3,9 @@
 .collection-intro { padding: 36px 0 25px; }
 .collection-eyebrow { margin: 0 0 8px; color: #3d684f; font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
 .collection-intro h1 { margin: 0; font: 500 clamp(42px, 5vw, 64px)/1 'Newsreader', Georgia, serif; letter-spacing: -.05em; }
+.collection-intro-copy { max-width: 760px; margin: 18px 0 0; color: #5c7061; font-size: 13px; line-height: 1.65; }
+.collection-intro-sources { margin-top: 9px; }
+.collection-intro-copy a { color: #286348; text-decoration-color: #9bb9a2; text-underline-offset: 2px; }
 .collection-offline { border: 1px solid #ddbcae; background: #fbf0e9; padding: 16px; color: #784a35; font-size: 12px; }
 .collection-offline small { display: block; margin-top: 5px; }
 .collection-controls { border-top: 1px solid #cbd5c9; padding: 20px 0 18px; }
