@@ -42,7 +42,7 @@ Run `python3 feasibility/probe_method_searches.py`; [raw results](method-search-
 | Yoneda embedding is fully faithful | `CategoryTheory.Yoneda.fullyFaithful` | 1 / 0 | 1.18 s | None reported by this graph snapshot |
 | Euclid's lemma | `Nat.Prime.dvd_or_dvd` | 30 / 39 | 14.01 s | `Decidable.byContradiction` at depth 4 |
 
-The one-node topology/algebra/category-theory cases illustrate a real source-coverage limit: TheoremGraph can return a declaration with no traversable proof dependencies. A no-hit there is not evidence that the proof has no method. The benchmark is a Python probe; its timings are remote-API observations and should not be interpreted as browser performance guarantees.
+The one-node topology/algebra/category-theory cases illustrate a proof-scope limit: some TheoremGraph declarations have no outgoing `proof` edges. `CategoryTheory.Yoneda.fullyFaithful` is a definition with 15 outgoing `def` references, which a proof-only scan excludes. The app now identifies this case and offers a broader definition-body scan. This broader scope can reach generic library definitions, so its paths must be inspected before attributing a method to the selected result. The benchmark is a Python proof-edge probe; its timings are remote-API observations and should not be interpreted as browser performance guarantees.
 
 ## Verification and remaining limits
 

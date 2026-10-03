@@ -51,14 +51,15 @@ function EvidenceItem({ evidence, theorem, onInspect }: { evidence: Evidence; th
   </div>
 }
 
-function QuestionCard({ objective, state, theorem, index, indexStatus, onInspect }: { objective: Objective; state?: TraversalState; theorem: Declaration; index?: MethodIndex; indexStatus: 'idle' | 'loading' | 'ready' | 'error'; onInspect: (id: string, policy: Policy) => void }) {
+function QuestionCard({ objective, state, theorem, index, indexStatus, onInspect, onIncludeDefinitions }: { objective: Objective; state?: TraversalState; theorem: Declaration; index?: MethodIndex; indexStatus: 'idle' | 'loading' | 'ready' | 'error'; onInspect: (id: string, policy: Policy) => void; onIncludeDefinitions: () => void }) {
   const evidence = findEvidence(state, objective, index)
   const primary = primaryEvidence(state, objective, index)
   const related = evidence.find((item) => item.grade === 'related')
   const unsupported = objective.capability === 'unavailable'
   const exhausted = state?.status === 'complete' && state.completionReason === 'exhausted'
+  const definitionScopeNeeded = exhausted && state.policy === 'proof' && /^def(?:inition)?$/i.test(theorem.kind ?? '') && state.visited.size === 1 && state.edges.length === 0 && state.rootDefinitionEdges > 0
   const indexMissing = objective.kind !== 'named' && indexStatus === 'error'
-  const badge = unsupported ? 'Undetermined' : primary?.grade === 'observed' ? 'Graph witness' : primary ? primary.joinStatus === 'different-version' ? 'Cross-version lead' : 'Possible method signal' : related ? 'Related evidence' : exhausted && indexMissing ? 'Partial evidence' : exhausted ? 'No marker observed' : state?.status === 'limited' ? 'Limit reached' : state?.status === 'error' ? 'API error' : state?.status === 'paused' ? 'Paused' : 'Searching'
+  const badge = unsupported ? 'Undetermined' : primary?.grade === 'observed' ? 'Graph witness' : primary ? primary.joinStatus === 'different-version' ? 'Cross-version lead' : 'Possible method signal' : related ? 'Related evidence' : definitionScopeNeeded ? 'Definition scope needed' : exhausted && indexMissing ? 'Partial evidence' : exhausted ? 'No marker observed' : state?.status === 'limited' ? 'Limit reached' : state?.status === 'error' ? 'API error' : state?.status === 'paused' ? 'Paused' : 'Searching'
   const kind = unsupported ? 'muted' : primary?.grade === 'observed' ? 'positive' : primary || related ? 'pending' : exhausted ? 'neutral' : state?.status === 'error' ? 'negative' : 'pending'
   return (
     <article className="answer-card">
@@ -70,10 +71,13 @@ function QuestionCard({ objective, state, theorem, index, indexStatus, onInspect
         <span className={`status-pill ${kind}`}>{!unsupported && !primary && !related && state?.status === 'running' && <LoaderCircle size={13} className="spin" />}{badge}</span>
       </div>
       <p className="interpretation">{objective.interpretation}</p>
+      {state?.policy === 'body' && /^def(?:inition)?$/i.test(theorem.kind ?? '') && <p className="answer-note">This scan includes definition-body references. A method found through them may belong to a referenced definition, so inspect its path.</p>}
       {unsupported ? (
         <p className="answer-note">This request has no reviewed detector. Enter a full Lean declaration name or choose one of the method questions.</p>
       ) : primary || related ? (
         <><EvidenceItem evidence={(primary ?? related)!} theorem={theorem} onInspect={(id) => onInspect(id, objective.policy ?? 'proof')} />{state?.completionReason === 'witnesses' ? <p className="fine-print">Exploration stopped at the first match. More paths may exist.</p> : state?.status !== 'complete' && <p className="fine-print">Exploration is still incomplete.</p>}</>
+      ) : definitionScopeNeeded ? (
+        <><p className="answer-note">This result is a definition. The proof-only scan has no proof edges to follow and excluded {state.rootDefinitionEdges} definition-body references. It cannot assess this question through those dependencies.</p><button type="button" className="evidence-inspect" onClick={onIncludeDefinitions}>Explore definition dependencies <ArrowRight size={13} /></button></>
       ) : exhausted ? (
         <p className="answer-note">{indexMissing ? 'Recorded tactics could not be checked. ' : ''}No matching graph marker appeared in {state.visited.size} checked declarations. The detector and source coverage cannot establish that this method is absent.</p>
       ) : state?.status === 'limited' ? (
@@ -81,7 +85,7 @@ function QuestionCard({ objective, state, theorem, index, indexStatus, onInspect
       ) : state?.status === 'error' ? (
         <p className="answer-note">{state.error} Remaining dependencies were not checked.</p>
       ) : <p className="answer-note">The graph is explored layer by layer. A verified path will appear here when found.</p>}
-      {!unsupported && !primary && !related && state && state.status !== 'running' && state.visited.size > 0 && <button type="button" className="evidence-inspect" onClick={() => onInspect(theorem.id, objective.policy ?? 'proof')}>Inspect in graph <ArrowRight size={13} /></button>}
+      {!unsupported && !primary && !related && !definitionScopeNeeded && state && state.visited.size > 0 && (state.edges.length > 0 || state.status !== 'running') && <button type="button" className="evidence-inspect" onClick={() => onInspect(theorem.id, objective.policy ?? 'proof')}>Inspect in graph <ArrowRight size={13} /></button>}
     </article>
   )
 }
@@ -103,6 +107,7 @@ function App() {
   const [searchNotice, setSearchNotice] = useState('')
   const [pauseRequested, setPauseRequested] = useState(false)
   const [methodIndex, setMethodIndex] = useState<MethodIndex | undefined>()
+  const [includeDefinitions, setIncludeDefinitions] = useState(false)
   const [indexStatus, setIndexStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const [indexError, setIndexError] = useState('')
   const [graphFocus, setGraphFocus] = useState<{ id: string; policy: Policy; serial: number } | undefined>()
@@ -115,6 +120,7 @@ function App() {
   const explorer = useRef(new Explorer(client, setStates))
 
   const activeStates = Array.from(states.values())
+  const scopedObjectives = objectives.map((objective) => includeDefinitions && objective.policy === 'proof' ? { ...objective, policy: 'body' as const } : objective)
   const isRunning = activeStates.some((state) => state.status === 'running')
   const canResume = activeStates.some((state) => state.status === 'paused' || state.status === 'error')
 
@@ -161,13 +167,20 @@ function App() {
     return () => { live = false; controller.abort() }
   }, [])
 
-  function resetAnalysis(nextObjectives = objectives, index = methodIndex) {
+  function resetAnalysis(nextObjectives = objectives, index = methodIndex, definitionScope = includeDefinitions) {
     if (!confirmed) return
     loggedTraversals.current.clear()
-    const policies = Array.from(new Set(nextObjectives.map((objective) => objective.policy).filter((value): value is Policy => Boolean(value))))
-    explorer.current.setup(confirmed, policies, nextObjectives, index)
+    const scoped = nextObjectives.map((objective) => definitionScope && objective.policy === 'proof' ? { ...objective, policy: 'body' as const } : objective)
+    const policies = Array.from(new Set(scoped.map((objective) => objective.policy).filter((value): value is Policy => Boolean(value))))
+    explorer.current.setup(confirmed, policies, scoped, index)
     if (policies.length) explorer.current.start()
     setPauseRequested(false)
+  }
+
+  function exploreDefinitions() {
+    setIncludeDefinitions(true)
+    setGraphOpen(false)
+    resetAnalysis(objectives, methodIndex, true)
   }
 
   function removeObjective(id: string) {
@@ -221,6 +234,7 @@ function App() {
     searchController.current?.abort()
     explorer.current.cancel()
     setConfirmed(null)
+    setIncludeDefinitions(false)
     setAnalysisStarted(false)
     setGraphOpen(false)
     setStates(new Map())
@@ -261,6 +275,7 @@ function App() {
     if (candidate.loading || candidate.error) return
     const declaration: Declaration = { id: candidate.id, name: candidate.name, kind: candidate.kind, body: candidate.body, slogan: candidate.slogan, source: candidate.source, sourceLabel: candidate.sourceLabel }
     setConfirmed(declaration)
+    setIncludeDefinitions(false)
     setAnalysisStarted(false)
     setGraphOpen(false)
     setStates(new Map())
@@ -320,7 +335,7 @@ function App() {
 
             {searchStatus === 'ready' && !confirmed && <section className="candidate-section" aria-labelledby="candidate-title"><div className="section-label"><span>02 / CONFIRM RESULT</span><span>Choose a declaration</span></div><h2 id="candidate-title">Which declaration did you mean?</h2><p className="section-intro">Results are ranked by similarity. Confirm the Lean declaration before choosing a question.</p>{/^[A-Za-z_][A-Za-z0-9_'.]*\.[A-Za-z_][A-Za-z0-9_'.]*$/.test(query.trim()) && !candidates.some((candidate) => candidate.name === query.trim()) && visibleCandidates >= candidates.length && candidates.every((candidate) => !candidate.loading) && <p className="search-advice"><code>{query.trim()}</code> did not appear in these results. Semantic search can miss an exact Lean name; try describing the mathematics instead.</p>}<div className="candidate-list">{candidates.slice(0, visibleCandidates).map((candidate, index) => <article className="candidate" key={candidate.id}><div className="candidate-index">{String(index + 1).padStart(2, '0')}</div><div className="candidate-body"><div className="candidate-top"><h3>{candidate.loading ? 'Loading name…' : candidate.name}</h3><span>{candidate.sourceLabel}</span></div>{candidate.body && <p className="formal-body">{candidate.body}</p>}{candidate.slogan && <p>{candidate.slogan}</p>}{candidate.error && <p className="candidate-error">Name unavailable: {candidate.error}</p>}<small>{candidate.id}</small></div><button className="candidate-select" type="button" disabled={candidate.loading || Boolean(candidate.error)} onClick={() => confirm(candidate)}>{candidate.loading ? <LoaderCircle className="spin" size={15} /> : <>Select <ArrowRight size={15} /></>}</button></article>)}</div>{visibleCandidates < candidates.length && <button type="button" className="candidate-more" onClick={showMoreCandidates}>Show {candidates.length - visibleCandidates} more results <ArrowDown size={15} /></button>}</section>}
 
-            {confirmed && <section className="confirmed-section" aria-labelledby="confirmed-title"><div className="section-label"><span>02 / SELECTED RESULT</span><button type="button" className="text-action" onClick={() => { explorer.current.cancel(); setConfirmed(null); setAnalysisStarted(false); setGraphOpen(false); setStates(new Map()) }}><ArrowLeft size={14} /> Change result</button></div><div className="confirmed-heading"><h2 id="confirmed-title">{confirmed.name}</h2><span className="check-seal"><Check size={19} /></span></div>{confirmed.slogan && <p className="confirmed-slogan">{confirmed.slogan}</p>}<details className="selected-details"><summary>Declaration details</summary>{confirmed.body && <p className="confirmed-statement">{confirmed.body}</p>}<div className="source-row"><span>Source: {confirmed.sourceLabel ?? 'TheoremGraph'}</span><span>ID: {confirmed.id}</span></div></details></section>}
+            {confirmed && <section className="confirmed-section" aria-labelledby="confirmed-title"><div className="section-label"><span>02 / SELECTED RESULT</span><button type="button" className="text-action" onClick={() => { explorer.current.cancel(); setConfirmed(null); setIncludeDefinitions(false); setAnalysisStarted(false); setGraphOpen(false); setStates(new Map()) }}><ArrowLeft size={14} /> Change result</button></div><div className="confirmed-heading"><h2 id="confirmed-title">{confirmed.name}</h2><span className="check-seal"><Check size={19} /></span></div>{confirmed.slogan && <p className="confirmed-slogan">{confirmed.slogan}</p>}<details className="selected-details"><summary>Declaration details</summary>{confirmed.body && <p className="confirmed-statement">{confirmed.body}</p>}<div className="source-row"><span>Source: {confirmed.sourceLabel ?? 'TheoremGraph'}</span><span>ID: {confirmed.id}</span></div></details></section>}
 
             {confirmed && <><section className="form-section objective-section" aria-labelledby="objective-title">
               <div className="section-label"><span>03 / QUESTION</span><span>Ask one or more</span></div>
@@ -340,8 +355,8 @@ function App() {
             {analysisStarted && confirmed && <section className="results" aria-labelledby="results-title"><div className="section-label"><span>04 / FINDINGS</span></div><div className="results-heading"><div><h2 id="results-title" tabIndex={-1}>What the dependencies show</h2><p>A path confirms a reference. It does not reconstruct the Lean proof script.</p></div><div className="result-actions">{isRunning && <button type="button" className="secondary-button" onClick={() => { explorer.current.pause(); setPauseRequested(true) }}><Pause size={15} /> {pauseRequested ? 'Pausing' : 'Pause'}</button>}{!isRunning && canResume && <button type="button" className="secondary-button" onClick={() => { explorer.current.resume(); setPauseRequested(false) }}><Play size={15} /> Resume</button>}</div></div>
               {indexStatus === 'loading' && <div className="inline-state" role="status"><LoaderCircle size={16} className="spin" /> Loading the compact MathlibGraph method index…</div>}
               {indexStatus === 'error' && <div className="inline-state error" role="alert">Recorded tactic evidence is unavailable: {indexError} Graph-reference detectors can still run. <button type="button" onClick={() => { void loadMethodIndex().then((index) => { setMethodIndex(index); setIndexStatus('ready'); setIndexError(''); explorer.current.setMethodIndex(index) }).catch((error) => setIndexError(formatError(error))) }}>Retry index</button></div>}
-              <div className="answers">{objectives.map((objective) => <QuestionCard key={objective.id} objective={objective} state={objective.policy ? states.get(objective.policy) : undefined} theorem={confirmed} index={methodIndex} indexStatus={indexStatus} onInspect={(id, policy) => { graphReturnFocus.current = document.activeElement as HTMLElement; setGraphOpen(true); setGraphFocus({ id, policy, serial: Date.now() }); window.setTimeout(() => { const title = document.getElementById('graph-title'); title?.scrollIntoView({ behavior: 'smooth', block: 'start' }); title?.focus({ preventScroll: true }) }, 30) }} />)}</div>
-              {graphOpen && <GraphExplorer states={states} root={confirmed} onClose={() => { setGraphOpen(false); window.setTimeout(() => graphReturnFocus.current?.focus(), 30) }} onContinue={(policy) => explorer.current.continueAfterWitness(policy)} canContinue={!isRunning} focusRequest={graphFocus} evidencePaths={objectives.flatMap((objective) => { if (!objective.policy) return []; const evidence = primaryEvidence(states.get(objective.policy), objective, methodIndex) ?? findEvidence(states.get(objective.policy), objective, methodIndex)[0]; return evidence ? [{ policy: objective.policy, path: evidence.path }] : [] })} />}
+              <div className="answers">{scopedObjectives.map((objective) => <QuestionCard key={objective.id} objective={objective} state={objective.policy ? states.get(objective.policy) : undefined} theorem={confirmed} index={methodIndex} indexStatus={indexStatus} onIncludeDefinitions={exploreDefinitions} onInspect={(id, policy) => { graphReturnFocus.current = document.activeElement as HTMLElement; setGraphOpen(true); setGraphFocus({ id, policy, serial: Date.now() }); window.setTimeout(() => { const title = document.getElementById('graph-title'); title?.scrollIntoView({ behavior: 'smooth', block: 'start' }); title?.focus({ preventScroll: true }) }, 30) }} />)}</div>
+              {graphOpen && <GraphExplorer states={states} root={confirmed} onClose={() => { setGraphOpen(false); window.setTimeout(() => graphReturnFocus.current?.focus(), 30) }} onContinue={(policy) => explorer.current.continueAfterWitness(policy)} canContinue={!isRunning} focusRequest={graphFocus} evidencePaths={scopedObjectives.flatMap((objective) => { if (!objective.policy) return []; const evidence = primaryEvidence(states.get(objective.policy), objective, methodIndex) ?? findEvidence(states.get(objective.policy), objective, methodIndex)[0]; return evidence ? [{ policy: objective.policy, path: evidence.path }] : [] })} />}
             </section>}
           </div>
 

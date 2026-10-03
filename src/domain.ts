@@ -59,6 +59,7 @@ export interface TraversalState {
   frontier: string[]
   requests: number
   elapsedMs: number
+  rootDefinitionEdges: number
   error?: string
 }
 

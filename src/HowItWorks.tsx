@@ -23,7 +23,7 @@ export default function HowItWorks() {
         </section>
         <section>
           <span className="guide-index">02 / KNOW THE LIMIT</span>
-          <div><h2>What can a result tell us?</h2><p>Analysis stops at the first usable graph witness for each question; the graph remains available for further exploration. A finding is an observation, not a reconstruction of the Lean proof.</p><p><strong>No marker observed</strong> means none appeared in the checked dependencies. It does not prove the method is absent. API errors and traversal limits can leave dependencies unchecked.</p></div>
+          <div><h2>What can a result tell us?</h2><p>Analysis stops at the first usable graph witness for each question; the graph remains available for further exploration. A finding is an observation, not a reconstruction of the Lean proof.</p><p><strong>No marker observed</strong> means none appeared in the checked dependencies. It does not prove the method is absent. API errors and traversal limits can leave dependencies unchecked. For a definition with no proof edges, you can choose to explore its definition-body dependencies.</p></div>
         </section>
       </div>
       <div className="guide-source"><p>Sources: live TheoremGraph dependencies and a compact tactic index derived from MathlibGraph.</p><a href="https://www.theoremsearch.com/docs" target="_blank" rel="noreferrer">TheoremGraph API <ExternalLink size={14} /></a><a href={MARKER_SOURCE_URL} target="_blank" rel="noreferrer">MathlibGraph dataset <ExternalLink size={14} /></a></div>

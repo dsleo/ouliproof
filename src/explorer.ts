@@ -12,7 +12,7 @@ export function freshState(policy: Policy, root: Declaration): TraversalState {
     policy, rootId: root.id, rootSourceLabel: root.sourceLabel, status: 'idle', visited: new Set(), discovered: new Set([root.id]),
     edges: [],
     names: new Map([[root.id, root]]), parents: new Map([[root.id, null]]),
-    frontier: [root.id], requests: 0, elapsedMs: 0,
+    frontier: [root.id], requests: 0, elapsedMs: 0, rootDefinitionEdges: 0,
   }
 }
 
@@ -151,6 +151,7 @@ export class Explorer {
         if (error) { failure ??= error; continue }
         state.visited.add(id)
         state.names.set(id, neighborhood.root)
+        if (id === state.rootId) state.rootDefinitionEdges = neighborhood.outgoing.filter((edge) => edge.type === 'def').length
         for (const [nodeId, declaration] of neighborhood.nodes) {
           if (!state.names.has(nodeId)) state.names.set(nodeId, declaration)
         }

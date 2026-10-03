@@ -91,6 +91,26 @@ describe('voisinage TheoremGraph', () => {
 
 describe('parcours des dépendances', () => {
   const target = interpretObjective('axiome du choix')!
+  it('identifies a definition root whose proof-only scan excludes its body edges', async () => {
+    const root = { ...declarations[0], kind: 'def' }
+    const client = { neighborhood: async (id: string) => id === root.id ? {
+      root, nodes: new Map(declarations.map((item) => [item.id, item])),
+      outgoing: [{ from: root.id, to: IDS.spec, type: 'def' }],
+    } as Neighborhood : neighborhood(1) } as TheoremGraphClient
+    const explorer = new Explorer(client, () => {})
+    explorer.setup(root, ['proof'])
+    explorer.start()
+    await vi.waitFor(() => expect(explorer.states.get('proof')?.completionReason).toBe('exhausted'))
+    const state = explorer.states.get('proof')!
+    expect(state.visited.size).toBe(1)
+    expect(state.rootDefinitionEdges).toBe(1)
+    expect(state.edges).toHaveLength(0)
+
+    explorer.setup(root, ['body'])
+    explorer.start()
+    await vi.waitFor(() => expect(explorer.states.get('body')?.completionReason).toBe('exhausted'))
+    expect(explorer.states.get('body')?.discovered.has(IDS.spec)).toBe(true)
+  })
   it('retrouve le chemin de Classical.em vers Classical.choice seulement avec def', async () => {
     const proof = await run('proof')
     expect(proof.status).toBe('complete')
