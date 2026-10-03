@@ -18,6 +18,8 @@ npm test
 npm run build
 ```
 
+To browse the local proof collection, run `npm run dev -- --port 5187 --strictPort` and open [the dataset explorer](http://127.0.0.1:5187/dataset). Vite starts the local dataset API, which searches a SQLite index and loads records from JSONL. The collection files are local and are not part of the hosted app; see [the dataset notes](data/oulipoof/README.md).
+
 The [Vercel configuration](vercel.json) rewrites API requests, the guide route, and its former URL. It caches neighborhood responses at the CDN for one hour; semantic search remains uncached. The site has not been deployed permanently. After a deployment, verify the CDN with real responses and the `x-vercel-cache` header (`MISS`, then `HIT`).
 
 ## Use the app

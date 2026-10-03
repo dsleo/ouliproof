@@ -1,7 +1,7 @@
 export function SiteHeader() {
   return <header className="site-header">
     <a className="brand" href="/" aria-label="Ouliproof home"><span className="brand-mark">O<span>·</span></span><span>Ouliproof</span></a>
-    <nav aria-label="Main navigation"><a href="/how-it-works" aria-current={window.location.pathname === '/how-it-works' ? 'page' : undefined}>How it works</a></nav>
+    <nav aria-label="Main navigation"><a href="/how-it-works" aria-current={window.location.pathname === '/how-it-works' ? 'page' : undefined}>How it works</a>{['127.0.0.1', 'localhost'].includes(window.location.hostname) && <a href="/dataset" aria-current={window.location.pathname === '/dataset' ? 'page' : undefined}>Proof collection</a>}</nav>
   </header>
 }
 
