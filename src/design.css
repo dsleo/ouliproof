@@ -115,6 +115,9 @@ code { font: .9em 'DM Mono', monospace; }
 .check-seal { display: grid; place-items: center; border: 1px solid #a3bea4; color: var(--green); border-radius: 50%; width: 37px; height: 37px; flex: none; }
 .confirmed-statement { font: 12px/1.6 'DM Mono', monospace; white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3eb; padding: 18px; margin: 10px 0; }
 .confirmed-slogan { font: 19px/1.35 'Newsreader', serif; color: #5a685b; margin: 8px 0 20px; }
+.declaration-kind-note { display: flex; gap: 15px; align-items: baseline; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 13px 0; margin: 15px 0 4px; color: #526357; }
+.declaration-kind-note strong { flex: none; color: var(--green); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
+.declaration-kind-note p { font-size: 13px; line-height: 1.55; margin: 0; }
 .source-row { border-top: 1px solid var(--line); padding-top: 12px; display: flex; gap: 10px 22px; flex-wrap: wrap; font: 10px 'DM Mono', monospace; color: #899388; overflow-wrap: anywhere; }
 .confirm-actions { margin-top: 32px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .confirm-actions p { color: #7e887d; font-size: 12px; }
@@ -216,6 +219,8 @@ footer span:first-child { font: 600 20px 'Newsreader', serif; color: var(--green
   .candidate-select { grid-column: 2; justify-self: start; margin-top: 2px; }
   .candidate-top { display: block; }
   .candidate-top span { display: block; margin-top: 5px; }
+  .declaration-kind-note { display: block; }
+  .declaration-kind-note p { margin-top: 5px; }
   .confirm-actions { display: block; }
   .confirm-actions .primary-button { width: 100%; margin-top: 16px; }
   .results-heading { display: block; }
