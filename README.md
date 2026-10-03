@@ -9,7 +9,7 @@ npm install
 npm run dev -- --port 5187 --strictPort
 ```
 
-Open [http://127.0.0.1:5187/](http://127.0.0.1:5187/). [How it works](http://127.0.0.1:5187/how-it-works) explains the workflow; [The principle](http://127.0.0.1:5187/principle) explains what the evidence can establish. Vite proxies `/tg/*` to `https://api.theoremsearch.com`, so searches and neighborhood requests require an internet connection. The app does not build or store a complete offline graph.
+Open [http://127.0.0.1:5187/](http://127.0.0.1:5187/). [How it works](http://127.0.0.1:5187/how-it-works) explains the workflow, evidence, and limits. Vite proxies `/tg/*` to `https://api.theoremsearch.com`, so searches and neighborhood requests require an internet connection. The app does not build or store a complete offline graph.
 
 The demo server runs as the local `com.ouliproof.dev` service on port `5187`. Stop it with `launchctl bootout gui/$(id -u) /tmp/com.ouliproof.dev.plist`.
 
@@ -18,13 +18,13 @@ npm test
 npm run build
 ```
 
-The [Vercel configuration](vercel.json) rewrites API requests and both guide routes. It caches neighborhood responses at the CDN for one hour; semantic search remains uncached. The site has not been deployed permanently. After a deployment, verify the CDN with real responses and the `x-vercel-cache` header (`MISS`, then `HIT`).
+The [Vercel configuration](vercel.json) rewrites API requests, the guide route, and its former URL. It caches neighborhood responses at the CDN for one hour; semantic search remains uncached. The site has not been deployed permanently. After a deployment, verify the CDN with real responses and the `x-vercel-cache` header (`MISS`, then `HIT`).
 
 ## Use the app
 
 1. Search for a Lean name or describe a mathematical result. TheoremGraph returns semantic matches, so confirm the exact declaration before continuing.
 2. Ask one or more questions. Select induction, case analysis, proof by contradiction, or enter a Lean name such as `depends on Nat.zero_add`.
-3. Inspect each exact graph witness or possible recorded-tactic signal. The path, source revision, and detector rule are visible. Pause, resume, share a link, or export JSON. A shared link still requires declaration confirmation.
+3. Inspect each exact graph witness or possible recorded-tactic signal and its dependency path. Pause or resume the traversal, and open the graph to explore the finding. A shared URL still requires declaration confirmation.
 
 The first five candidate names are loaded initially. You can show five more on demand. Neighborhood responses supply the Lean names because search results may use a generic name.
 
