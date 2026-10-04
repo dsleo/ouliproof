@@ -136,8 +136,9 @@
       "sha256": "e8b13ac3611d9766bdfb4328f336ed78062ea904bbe0f5fab47ab0177f01dcba"
     },
     "formal.jsonl": {
-      "bytes": 974260047,
-      "sha256": "c6f3ed67fbe80b17f64d2ba013b9207c96b7150bbd21eb580ef5336b6c319fbb"
+      "bytes": 22595490,
+      "sha256": "c767f4396f60f09da4575674042aef563dc72ca951fe151685859b0c73b090b8",
+      "profile": "ui: no tactic traces or proof trees"
     }
   }
 }

@@ -389,11 +389,9 @@ def build_formal():
                 def track(prefix, code):
                     return {
                         "code": code, "main_theorem_proof_code": row[f"{prefix}_main_theorem_proof_code"],
-                        "main_theorem_context_code": row[f"{prefix}_main_theorem_context_code"],
                         "main_theorem_split_valid": row[f"{prefix}_main_theorem_split_valid"],
                         "origin": "human" if prefix == "human" else "synthetic",
-                        "validation_status": "valid", "tactics": row[f"{prefix}_main_theorem_tactics"] or [],
-                        "proof_tree": row[f"{prefix}_main_theorem_proof_tree"],
+                        "validation_status": "valid",
                     }
                 json_line(handle, {
                     "id": f"numina:{row['uuid']}", "source_id": row["uuid"],
