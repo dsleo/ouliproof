@@ -11,7 +11,7 @@ type Item = { id: string; kind: 'informal' | 'formal'; dataset: string; title: s
 type Listing = { items: Item[]; total: number; page: number; page_size: number }
 type InformalProof = { proof_id: string; text: string; content_type: string; origin: string; source_url: string | null; technique?: string | null; method_cluster?: { id: string; name: string; defining_approach: string }; method_fingerprint?: { primary_approach: string | null; secondary_techniques: string[] } }
 type InformalDetail = { id: string; dataset: string; statement: string; source_id: string; source_url: string | null; answer: string | null; proofs: InformalProof[]; source_metadata?: { method_clustering?: { status: string; cluster_count: number | null; judge: string | null } } }
-type FormalProof = { code: string; main_theorem_proof_code: string | null; main_theorem_split_valid: boolean; validation_status: string; tactics_count: number }
+type FormalProof = { code: string; main_theorem_proof_code: string | null; main_theorem_split_valid: boolean; validation_status: string }
 type FormalDetail = { id: string; dataset: string; problem: string; formal_statement: string; source_id: string; human_proof: FormalProof; prover_proof: FormalProof }
 type Detail = InformalDetail | FormalDetail
 
@@ -55,7 +55,7 @@ function ProofDisclosure({ id, number, label, openProof, setOpenProof, children 
 }
 function FormalProofBody({ proof }: { proof: FormalProof }) {
   const code = proof.main_theorem_split_valid && proof.main_theorem_proof_code ? proof.main_theorem_proof_code : proof.code
-  return <><p className="collection-proof-note">Source validation: {proof.validation_status} · {proof.tactics_count.toLocaleString()} recorded tactics</p><pre><code>{code}</code></pre></>
+  return <><p className="collection-proof-note">Source validation: {proof.validation_status}</p><pre><code>{code}</code></pre></>
 }
 function StatementProofs({ row, visibleCount, setVisibleCount, openProof, setOpenProof }: {
   row: Detail; visibleCount: number; setVisibleCount: (count: number) => void;
@@ -166,7 +166,7 @@ export default function DatasetExplorer() {
 
   return <div className="dataset-page"><SiteHeader /><main className="collection-main">
     <header className="collection-intro"><p className="collection-eyebrow">Oulipoof / seed collection</p><h1>Proof collection</h1><p className="collection-intro-copy">How can the same statement be proved in different ways? This collection is for studying proof diversity and the techniques used across human and AI solutions, in both informal explanations and formal Lean code.</p><p className="collection-intro-copy collection-intro-sources">It is built from the Hugging Face datasets <a href={sourcePages.ProofRank} target="_blank" rel="noreferrer">ProofRank</a>, <a href={sourcePages['proofwiki-math']} target="_blank" rel="noreferrer">ProofWiki Math</a>, <a href={sourcePages['Nemotron-Math-Proofs-v2']} target="_blank" rel="noreferrer">Nemotron Math Proofs v2</a>, and <a href={sourcePages['NuminaMath-LEAN-Proof-Artifacts']} target="_blank" rel="noreferrer">NuminaMath Lean Proof Artifacts</a>.</p></header>
-    {(statsError || listError || positionError) && <div className="collection-offline" role="alert"><strong>Collection unavailable.</strong> Reconnecting to the local dataset… <small>{statsError || listError || positionError}</small></div>}
+    {(statsError || listError || positionError) && <div className="collection-offline" role="alert"><strong>Collection unavailable.</strong> Reconnecting… <small>{statsError || listError || positionError}</small></div>}
     <section className="collection-controls" aria-label="Collection filters">
       <label className="collection-search"><Search size={17} /><span className="sr-only">Search statements</span><input value={query} onChange={(event) => { resetSearchAndSource(); setQuery(event.target.value) }} placeholder="Search statements, Lean names, or IDs" /></label>
       <label className="collection-source-filter"><span>Source</span><select value={dataset} onChange={(event) => { resetSearchAndSource(); setDataset(event.target.value) }}><option value="all">All sources</option>{stats?.sources.map((source) => <option key={source.dataset} value={source.dataset}>{sourceName(source.dataset)} · {source.count.toLocaleString()}</option>)}</select></label>

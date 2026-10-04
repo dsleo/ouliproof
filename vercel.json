@@ -1,7 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
+  "functions": {
+    "api/seed-api/[route].ts": {
+      "includeFiles": "api/collection-index.json"
+    }
+  },
   "rewrites": [
+    { "source": "/seed-api/:path*", "destination": "/api/seed-api/:path*" },
     { "source": "/how-it-works", "destination": "/index.html" },
     { "source": "/dataset", "destination": "/index.html" },
     { "source": "/principle", "destination": "/index.html" },
