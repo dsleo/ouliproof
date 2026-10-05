@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "description": "Human-curated strategy annotations for selected, famous ProofWiki results already present in the seed collection. Labels describe the displayed source proof, rather than asserting that these are the only proof methods for the result.",
+  "results": {
+    "proofwiki:99e22b778d2ae35a4a0a46fd461df974d7bfb1b7a18ffc247914db78692fa626": {
+      "title": "Pythagoras's Theorem",
+      "field": "Geometry",
+      "period": "Classical geometry",
+      "overview": "A single theorem seen through dissection, Euclidean area, similar triangles, trigonometry, and cyclic geometry.",
+      "historical_note": "The theorem is traditionally associated with ancient Greek mathematics; these are modern ProofWiki presentations, not transcriptions of historical sources.",
+      "proofs": {
+        "proofwiki:proofwiki-19": { "label": "Trigonometric identity", "description": "Derives the result from the sine-cosine identity and the right-triangle definitions of sine and cosine." },
+        "proofwiki:proofwiki-20": { "label": "Euclidean area dissection", "description": "Uses the classical construction of squares on the three sides and compares congruent triangles with parallelograms." },
+        "proofwiki:proofwiki-21": { "label": "Four-triangle area rearrangement", "description": "Computes the area of one large square in two ways after arranging four copies of the triangle." },
+        "proofwiki:proofwiki-22": { "label": "Similar triangles", "description": "Uses the altitude to the hypotenuse and proportional sides in the resulting similar triangles." },
+        "proofwiki:proofwiki-23": { "label": "Complementary-square area", "description": "Equates the area of a square with four triangles and a central complementary square." },
+        "proofwiki:proofwiki-24": { "label": "Dissection and rearrangement", "description": "Cuts the square on the hypotenuse and rearranges the pieces into the two squares on the legs." },
+        "proofwiki:proofwiki-25": { "label": "Equal-area square rearrangement", "description": "Compares two decompositions of equal large squares after cancelling four congruent triangles." },
+        "proofwiki:proofwiki-27": { "label": "Similarity and area ratios", "description": "Uses the altitude construction, similarity, and ratios of areas to recover the side-square identity." },
+        "proofwiki:proofwiki-28": { "label": "Cyclic quadrilateral and Ptolemy", "description": "Places a rectangle on a circumcircle and applies Ptolemy's theorem." },
+        "proofwiki:proofwiki-29": { "label": "Similarity with altitudes", "description": "Combines similarity ratios with an area decomposition of the original triangle." }
+      }
+    },
+    "proofwiki:1da31213790cf42b6bae98efcab61dfdf03152b0a8aaf5cdd1af777f55c94ece": {
+      "title": "Square Root of 2 is Irrational",
+      "field": "Number theory",
+      "period": "Classical number theory",
+      "overview": "The familiar statement has parity, descent, polynomial, and analytic-style routes.",
+      "historical_note": "The result is traditionally linked to early Greek mathematics; the proofs here are modern ProofWiki presentations.",
+      "proofs": {
+        "proofwiki:proofwiki-143": { "label": "Parity contradiction", "description": "A lowest-terms fraction would force both numerator and denominator to be even." },
+        "proofwiki:proofwiki-144": { "label": "Prime-root theorem", "description": "Reduces the claim to the general theorem that the square root of a prime is irrational." },
+        "proofwiki:proofwiki-145": { "label": "Integer bound from binomial expansion", "description": "Builds integer expressions from powers of √2−1 and derives a contradiction from their size." },
+        "proofwiki:proofwiki-146": { "label": "Infinite descent", "description": "Transforms a supposed representation into one with a strictly smaller positive denominator." },
+        "proofwiki:proofwiki-147": { "label": "Rational root theorem", "description": "Rules out every possible rational root of x²−2." }
+      }
+    },
+    "proofwiki:7c867f57f0efc7d0ec5271daedeca44adcded1767429051d37dfc4a676741c18": {
+      "title": "Fermat's Little Theorem",
+      "field": "Number theory",
+      "period": "Early modern number theory",
+      "overview": "The result is approached through residue permutations, finite groups, binomial coefficients, and cyclic actions.",
+      "proofs": {
+        "proofwiki:proofwiki-91": { "label": "Necklace counting", "description": "Counts p-bead colorings by rotation orbits to obtain the equivalent congruence nᵖ ≡ n mod p." },
+        "proofwiki:proofwiki-92": { "label": "Permutation of nonzero residues", "description": "Multiplication by n permutes the nonzero residue classes modulo p." },
+        "proofwiki:proofwiki-93": { "label": "Euler totient specialization", "description": "Obtains the theorem as the prime-modulus case of Euler's theorem." },
+        "proofwiki:proofwiki-94": { "label": "Finite-group order", "description": "Applies the order of the multiplicative group of nonzero residues modulo p." },
+        "proofwiki:proofwiki-95": { "label": "Binomial induction", "description": "Uses the divisibility of intermediate binomial coefficients by p in an induction argument." },
+        "proofwiki:proofwiki-96": { "label": "Burnside orbit count", "description": "Counts fixed p-tuples under cyclic shifts using Burnside's lemma." }
+      }
+    },
+    "proofwiki:f30b71a53b6c44b7488b08861f9dfe8ff41f440003db4405c605c1fc716055dc": {
+      "title": "Fundamental Theorem of Algebra",
+      "field": "Complex analysis",
+      "period": "Nineteenth-century analysis",
+      "overview": "A foundational existence theorem with topological, complex-analytic, algebraic, and minimization arguments.",
+      "proofs": {
+        "proofwiki:proofwiki-1597": { "label": "Homotopy and winding", "description": "Deforms the polynomial to its leading monomial and uses topological behavior on a large circle." },
+        "proofwiki:proofwiki-1598": { "label": "Liouville's theorem", "description": "A zero-free polynomial would give a bounded entire reciprocal, hence a contradiction." },
+        "proofwiki:proofwiki-1599": { "label": "Contour integral", "description": "Uses a contour integral estimate and holomorphicity under the assumption of no root." },
+        "proofwiki:proofwiki-1600": { "label": "Algebraic induction on degree", "description": "Reduces degrees through an induction argument using real polynomials and splitting fields." },
+        "proofwiki:proofwiki-1601": { "label": "Minimum-modulus argument", "description": "Uses growth at infinity to find a minimum of |p| and shows a positive minimum is impossible." },
+        "proofwiki:proofwiki-1602": { "label": "Cauchy integral formula", "description": "Combines Cauchy's integral formula with a large-circle estimate for the reciprocal." }
+      }
+    },
+    "proofwiki:26679abbccff819bb46e38a67d186b633b7b2b02489026de7dea9a64954db744": {
+      "title": "Unique Prime Factorization",
+      "field": "Number theory",
+      "period": "Classical arithmetic",
+      "overview": "Three compact arguments show how minimality, cancellation, and induction enforce uniqueness.",
+      "proofs": {
+        "proofwiki:proofwiki-5522": { "label": "Minimal counterexample", "description": "Assumes a least integer with two prime factorizations and constructs a smaller counterexample." },
+        "proofwiki:proofwiki-5523": { "label": "Euclid's lemma and cancellation", "description": "Matches a prime factor across two products, cancels it, and repeats." },
+        "proofwiki:proofwiki-5524": { "label": "Strong induction", "description": "Proves uniqueness for each integer from the uniqueness of smaller prime decompositions." }
+      }
+    }
+  }
+}
