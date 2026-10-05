@@ -19,8 +19,6 @@ type CollectionIndex = {
   sources: { kind: 'informal' | 'formal'; dataset: string; count: number }[]
   items: Item[]
   position: Record<string, number>
-  featured: Record<string, unknown>
-  featured_items: { id: string; title: string; field: string }[]
 }
 
 const collection = JSON.parse(readFileSync(join(process.cwd(), 'api', 'collection-index.json'), 'utf8')) as CollectionIndex
@@ -56,7 +54,7 @@ export default async function handler(request: any, response: any) {
   const id = queryValue(request.query.id)
 
   if (route === 'stats') {
-    return responseJson(response, 200, { sources: collection.sources, total: collection.items.length, featured: collection.featured_items })
+    return responseJson(response, 200, { sources: collection.sources, total: collection.items.length })
   }
   if (route === 'position') {
     const page = collection.position[id]
@@ -84,8 +82,6 @@ export default async function handler(request: any, response: any) {
       const blobResponse = await fetch(url, { headers: { Range: `bytes=${item.byte_offset}-${item.byte_offset + item.byte_length - 1}` } })
       if (!blobResponse.ok) throw new Error(`Blob request failed (${blobResponse.status})`)
       const detail = JSON.parse(await blobResponse.text())
-      const curation = collection.featured[item.id]
-      if (curation) detail.curation = curation
       return responseJson(response, 200, detail)
     } catch (error) {
       return responseJson(response, 502, { error: error instanceof Error ? error.message : 'Could not read collection record' })

@@ -18,7 +18,6 @@ from urllib.parse import parse_qs, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data" / "oulipoof"
 INDEX = DATA / ".seed-index.sqlite"
-FEATURED = DATA / "featured-results.json"
 PAGE_SIZE = 1
 INDEX_VERSION = 2
 
@@ -146,10 +145,6 @@ def get_item(item_id):
             proof = row[key]
             proof["tactics_count"] = len(proof.pop("tactics", []))
             proof["proof_tree_available"] = proof.pop("proof_tree", None) is not None
-    else:
-        curation = json.loads(FEATURED.read_text(encoding="utf-8"))["results"].get(item_id)
-        if curation:
-            row["curation"] = curation
     return row
 
 
@@ -165,11 +160,8 @@ def get_position(item_id):
 def stats():
     with sqlite3.connect(INDEX) as db:
         rows = db.execute("SELECT kind,dataset,COUNT(*) FROM items GROUP BY kind,dataset ORDER BY kind,dataset").fetchall()
-    featured = json.loads(FEATURED.read_text(encoding="utf-8"))["results"]
     return {"sources": [{"kind": kind, "dataset": dataset, "count": count} for kind, dataset, count in rows],
-            "total": sum(row[2] for row in rows),
-            "featured": [{"id": item_id, "title": result["title"], "field": result["field"]}
-                         for item_id, result in featured.items()]}
+            "total": sum(row[2] for row in rows)}
 
 
 class Handler(BaseHTTPRequestHandler):
