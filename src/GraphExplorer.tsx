@@ -78,7 +78,7 @@ function GraphView({ state, root, expanded, onExpand, focusRequest, evidencePath
   const [query, setQuery] = useState('')
   const [zoom, setZoom] = useState(1)
   const [showList, setShowList] = useState(false)
-  const [showFullGraph, setShowFullGraph] = useState(false)
+  const [showFullGraph, setShowFullGraph] = useState(true)
   const [narrow, setNarrow] = useState(() => window.matchMedia('(max-width: 600px)').matches)
   const viewport = useRef<HTMLDivElement>(null)
   const lastFitTarget = useRef('')
@@ -214,7 +214,7 @@ function GraphView({ state, root, expanded, onExpand, focusRequest, evidencePath
   </div>
 }
 
-export function GraphExplorer({ states, root, onClose, onContinue, canContinue, focusRequest, evidencePaths }: { states: Map<Policy, TraversalState>; root: Declaration; onClose: () => void; onContinue: (policy: Policy) => void; canContinue: boolean; focusRequest?: { id: string; policy: Policy; serial: number }; evidencePaths: EvidencePath[] }) {
+export function GraphExplorer({ states, root, onContinue, canContinue, focusRequest, evidencePaths }: { states: Map<Policy, TraversalState>; root: Declaration; onContinue: (policy: Policy) => void; canContinue: boolean; focusRequest?: { id: string; policy: Policy; serial: number }; evidencePaths: EvidencePath[] }) {
   const [policy, setPolicy] = useState<Policy>('proof')
   const [expanded, setExpanded] = useState(false)
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -222,7 +222,6 @@ export function GraphExplorer({ states, root, onClose, onContinue, canContinue, 
   const available = [...states.keys()]
   const effectivePolicy = states.has(policy) ? policy : available[0]
   const state = states.get(effectivePolicy)
-  const hasWitnessPath = evidencePaths.some((item) => item.policy === effectivePolicy && item.path.length > 0)
   useEffect(() => { if (focusRequest && states.has(focusRequest.policy)) setPolicy(focusRequest.policy) }, [focusRequest?.serial, states])
   useEffect(() => {
     const dialog = dialogRef.current
@@ -235,7 +234,7 @@ export function GraphExplorer({ states, root, onClose, onContinue, canContinue, 
   }, [expanded, Boolean(state)])
   if (!state) return null
   return <section className="graph-section" aria-labelledby="graph-title">
-    <div className="graph-section-head"><div><h3 id="graph-title" tabIndex={-1}>{hasWitnessPath ? 'Dependency path' : 'Explored dependencies'}</h3><p>{hasWitnessPath ? 'From the selected theorem to this finding.' : 'Observed references in the explored portion of the graph.'}</p></div><button type="button" className="graph-close" onClick={onClose}><X size={15} /> Close graph</button></div>
+    <div className="graph-section-head"><div><p className="eyebrow">05 / GRAPH</p><h2 id="graph-title" tabIndex={-1}>The explored graph</h2><p>Explore observed dependencies, including links between branches. Highlighted paths lead to a finding.</p></div></div>
     {available.length > 1 && <div className="graph-policy" role="group" aria-label="Dependency type">{available.map((option) => <button type="button" key={option} className={effectivePolicy === option ? 'active' : ''} aria-pressed={effectivePolicy === option} onClick={() => setPolicy(option)}>{POLICY_LABEL[option]}</button>)}</div>}
     <dialog ref={dialogRef} className={`graph-dialog ${expanded ? 'expanded' : ''}`} aria-label="Dependency graph explorer" onCancel={(event) => { event.preventDefault(); setExpanded(false) }}><GraphView key={`${root.id}-${effectivePolicy}`} state={state} root={root} expanded={expanded} onExpand={() => setExpanded((value) => !value)} focusRequest={focusRequest?.policy === effectivePolicy ? focusRequest : undefined} evidencePaths={evidencePaths.filter((item) => item.policy === effectivePolicy).map((item) => item.path)} /></dialog>
     {state.completionReason === 'witnesses' && state.frontier.length > 0 && <details className="graph-more"><summary>Explore beyond the first match</summary><div className="graph-continue"><p>More dependencies may reveal other paths.</p><button type="button" disabled={!canContinue} onClick={() => onContinue(effectivePolicy)}><Play size={14} /> Continue exploring</button></div></details>}

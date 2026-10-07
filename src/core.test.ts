@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { normalizeNeighborhood, safeSourceUrl, TheoremGraphClient } from './api'
 import type { Declaration, Neighborhood, Objective, TraversalState } from './domain'
 import { Explorer, findWitness } from './explorer'
-import { interpretObjective } from './objectives'
+import { interpretObjective, namedObjective, resolvableText } from './objectives'
 
 const IDS = {
   em: '46f9bdf2-6f17-43d0-9009-8485b2479ea2',
@@ -305,5 +305,15 @@ describe('requêtes partagées et annulation', () => {
       expect(fetchMock).toHaveBeenCalledTimes(2)
       expect(client.cacheStats().rateLimits).toBe(1)
     } finally { globalThis.fetch = originalFetch }
+  })
+})
+
+describe('informal dependencies', () => {
+  it('sends free text to search but not Lean names or method questions', () => {
+    expect(resolvableText('uses Zorn’s lemma')).toBe('Zorn’s lemma')
+    expect(resolvableText('the pigeonhole principle')).toBe('the pigeonhole principle')
+    expect(resolvableText('depends on Nat.zero_add')).toBeNull()
+    expect(resolvableText('induction')).toBeNull()
+    expect(namedObjective('Zorn’s lemma', 'zorn_le')).toMatchObject({ kind: 'named', target: 'zorn_le', policy: 'proof', capability: 'exact' })
   })
 })

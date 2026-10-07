@@ -3,10 +3,10 @@ import type { Objective, Policy } from './domain'
 const LEAN_NAME = /^[A-Za-z_][A-Za-z0-9_'.]*(?:\.[A-Za-z_][A-Za-z0-9_']*)*$/
 
 export const SUGGESTIONS = [
-  { label: 'Axiom of choice', value: 'axiom of choice', caption: 'Path to Classical.choice' },
-  { label: 'Induction', value: 'induction', caption: 'Recursors and recorded tactics' },
-  { label: 'Case analysis', value: 'case analysis', caption: 'Elimination and recorded tactics' },
-  { label: 'Proof by contradiction', value: 'proof by contradiction', caption: 'Principles and recorded tactics' },
+  { label: 'Uses the axiom of choice', value: 'axiom of choice', caption: 'Does the proof rely on choice?' },
+  { label: 'Argues by induction', value: 'induction', caption: 'Recursion on ℕ or on structures' },
+  { label: 'Splits into cases', value: 'case analysis', caption: 'Elimination of a disjunction or a type' },
+  { label: 'Argues by contradiction', value: 'proof by contradiction', caption: 'Assumes the opposite, reaches absurdity' },
 ]
 
 function make(original: string, kind: Objective['kind'], interpretation: string, capability: Objective['capability'], target?: string, policy?: Policy): Objective {
@@ -44,4 +44,14 @@ export function interpretObjective(raw: string): Objective | null {
 
 export function objectiveKey(objective: Objective): string {
   return [objective.kind, objective.target ?? '', objective.policy ?? '', objective.original.toLocaleLowerCase()].join('|')
+}
+
+export function namedObjective(original: string, target: string): Objective {
+  return make(original, 'named', `Look for an exact reference to ${target} in the dependency chain.`, 'exact', target, 'proof')
+}
+
+// Free text that matches no detector may still name a result; it goes through search and confirmation first.
+export function resolvableText(raw: string): string | null {
+  const text = raw.trim().replace(/^(?:depends?\s+on|relies\s+on|uses?|needs?|references?|find)\s+/i, '').trim()
+  return interpretObjective(raw)?.kind === 'unknown' && text.length > 2 ? text : null
 }

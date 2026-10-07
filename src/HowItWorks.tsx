@@ -12,12 +12,19 @@ export default function HowItWorks() {
     <main className="guide-page">
       <div className="guide-intro">
         <h1>How it works</h1>
-        <p>Follow a theorem’s dependencies to find observable traces of a method in its proof chain.</p>
+        <p>Describe a result in plain mathematics. We find it in Mathlib, follow its Lean proof, and report what it relies on.</p>
         <a className="guide-cta" href="/">Search for a result <ArrowRight size={16} /></a>
       </div>
       <div className="guide-sections">
         <section>
-          <div><p>We inspect the selected theorem and the lemmas it relies on.</p><div className="guide-chain"><span>Selected theorem</span><span>→</span><span>Referenced lemma</span><span>→</span><span>Method signal</span></div><p><strong>Built-in proof strategies</strong> are curated categories, such as induction or contradiction. Ouliproof labels a strategy only when its predefined evidence rule is met.</p><p><strong>User-entered signals</strong> let you search for a tactic, theorem, constant, or other marker. The result shows where it appears in the dependency chain, without classifying the overall proof strategy.</p><p><strong>No marker observed</strong> means none appeared in the dependencies checked by the app; it does not prove that the method is absent. API errors and traversal limits can leave some dependencies unchecked.</p></div>
+          <div><h2>Your words, then Lean, then back</h2></div>
+          <div>
+            <div className="guide-chain"><span>Your statement</span><span>→</span><span>Mathlib match</span><span>→</span><span>Dependencies</span><span>→</span><span>Plain reading</span></div>
+            <p><strong>Match.</strong> You write a statement, or a Lean name. We show close Mathlib results and you confirm the right one.</p>
+            <p><strong>Follow.</strong> We read the proof’s dependencies live and look for the methods or results you ask about.</p>
+            <p><strong>Read.</strong> Steps appear as informal statements, with the Lean name beside them.</p>
+            <p><strong>Limits.</strong> Everything comes from Mathlib: if your result isn’t formalized there, we can’t analyse it. “No marker observed” never proves a method is absent.</p>
+          </div>
         </section>
       </div>
       <div className="guide-source"><p>Sources: live <a href="https://www.theoremsearch.com/docs" target="_blank" rel="noreferrer">TheoremGraph dependencies <ExternalLink size={14} /></a> and a compact tactic index derived from <a href={MARKER_SOURCE_URL} target="_blank" rel="noreferrer">MathlibGraph <ExternalLink size={14} /></a>.</p></div>

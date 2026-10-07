@@ -1,41 +1,60 @@
 import { ArrowRight, Check, LoaderCircle } from 'lucide-react'
-import type { Declaration, Objective, Policy, TraversalState } from './domain'
+import type { Declaration, Objective, TraversalState } from './domain'
+import { MathText } from './MathText'
 import { findEvidence, type Evidence, type MethodIndex } from './methods'
 
 function isDefinition(kind?: string) { return /^def(?:inition)?$/i.test(kind ?? '') }
 
-function EvidenceItem({ evidence, theorem, onInspect }: { evidence: Evidence; theorem: Declaration; onInspect: (id: string) => void }) {
+// ponytail: small hand-written table for the principles users meet most; the rest fall back to the slogan, then the Lean name.
+const INFORMAL_NAME: Record<string, string> = {
+  'Nat.recAux': 'the induction principle on ℕ', 'Nat.rec': 'the induction principle on ℕ', 'Nat.le_induction': 'induction starting from a base case',
+  'Classical.choice': 'the axiom of choice', 'Classical.em': 'the law of excluded middle', 'Classical.byContradiction': 'proof by contradiction',
+  'Decidable.byContradiction': 'proof by contradiction', 'Classical.byCases': 'case analysis on a statement', 'Or.elim': 'case analysis on a disjunction',
+  'propext': 'propositional extensionality', 'Quot.sound': 'quotient soundness', 'funext': 'function extensionality', 'False.elim': 'ex falso (from a contradiction, anything)',
+}
+
+const METHOD_PHRASE: Record<string, string> = { induction: 'Induction', cases: 'Case analysis', absurd: 'Proof by contradiction', choice: 'The axiom of choice' }
+
+// ponytail: one fixed sentence per grade; richer prose (per-rule wording) only if users ask.
+export function storyHeadline(evidence: Evidence, objective: Objective) {
+  const via = INFORMAL_NAME[evidence.matchedName]
+  const method = objective.kind === 'named' ? `A reference to ${objective.target ?? evidence.matchedName}` : METHOD_PHRASE[objective.kind] ?? 'This method'
+  const steps = evidence.path.length - 1
+  const where = steps === 0 ? 'in the selected proof itself' : `${steps} ${steps === 1 ? 'step' : 'steps'} down`
+  return evidence.grade === 'observed' ? `${method} enters through ${via ?? evidence.matchedName}, ${where}.` : `${method} may be used ${where}: a recorded tactic suggests it, but the proof version is unconfirmed.`
+}
+
+function EvidenceItem({ evidence, objective, theorem, names }: { evidence: Evidence; objective: Objective; theorem: Declaration; names?: Map<string, Declaration> }) {
   return <div className={`witness evidence-${evidence.grade}`}>
+    <p className="story-headline">{storyHeadline(evidence, objective)}</p>
     <div className="witness-title">{evidence.grade === 'observed' ? <Check size={16} aria-hidden="true" /> : <span className="lead-mark" aria-hidden="true" />}<strong>{evidence.matchedName}</strong><span>{evidence.path.length - 1} {evidence.path.length === 2 ? 'edge' : 'edges'} · {evidence.location === 'root' ? 'selected proof' : evidence.location === 'definition' ? 'reached definition' : 'proof dependency'}</span></div>
     <p className="evidence-description">{evidence.explanation}</p>
     <ol className="path" aria-label={`Path from ${theorem.name} to ${evidence.matchedName}`}>
-      {evidence.path.map((step, index) => <li key={`${step.id}-${index}`}>
-        {index > 0 && <span className="edge-type">{step.via}</span>}
-        <span className="path-node" title={step.id}>{step.name}</span>
-      </li>)}
+      {evidence.path.map((step, index) => {
+        const declaration = names?.get(step.id)
+        const informal = declaration?.slogan ?? INFORMAL_NAME[step.name]
+        const link = index > 0 && <span className="edge-type">{step.via === 'def' ? 'unfolds' : 'uses'}</span>
+        return <li key={`${step.id}-${index}`}>
+          <div className="story-step">
+            {informal ? <>
+              <span className="story-informal">{link}<MathText text={informal} /></span>
+              <span className="story-lean">Lean · <code>{step.name}</code></span>
+            </> : <>
+              <span className="path-node" title={step.id}>{link}{step.name}</span>
+              {declaration?.body && <span className="story-statement">{declaration.body}</span>}
+            </>}
+          </div>
+        </li>
+      })}
     </ol>
-    <details className="evidence-details">
-      <summary>Evidence details</summary>
-      <dl>
-        <div><dt>Source</dt><dd>{evidence.source}</dd></div>
-        {evidence.matchedToken && <div><dt>Recorded tactic</dt><dd><code>{evidence.matchedToken}</code></dd></div>}
-        {evidence.sourceRevision && <div><dt>MathlibGraph revision</dt><dd><code>{evidence.sourceRevision}</code></dd></div>}
-        {(evidence.graphSourceLabel || evidence.source === 'MathlibGraph') && <div><dt>TheoremGraph snapshot</dt><dd><code>{evidence.graphSourceLabel ?? 'Not provided'}</code></dd></div>}
-        {evidence.joinStatus && <div><dt>Proof-version match</dt><dd>{evidence.joinStatus === 'different-version' ? 'Different labelled versions; this tactic remains a lead.' : 'Not verified; this tactic remains a lead.'}</dd></div>}
-        <div><dt>Detector rule</dt><dd><code>{evidence.ruleId}</code></dd></div>
-      </dl>
-    </details>
-    <button type="button" className="evidence-inspect" onClick={() => onInspect(evidence.path[evidence.path.length - 1].id)}>Inspect in graph <ArrowRight size={13} /></button>
   </div>
 }
 
-export function QuestionCard({ objective, state, theorem, index, indexStatus, onInspect, onIncludeDefinitions, onResume }: { objective: Objective; state?: TraversalState; theorem: Declaration; index?: MethodIndex; indexStatus: 'idle' | 'loading' | 'ready' | 'error'; onInspect: (id: string, policy: Policy) => void; onIncludeDefinitions: () => void; onResume: () => void }) {
+export function QuestionCard({ objective, state, theorem, index, indexStatus, onIncludeDefinitions, onResume }: { objective: Objective; state?: TraversalState; theorem: Declaration; index?: MethodIndex; indexStatus: 'idle' | 'loading' | 'ready' | 'error'; onIncludeDefinitions: () => void; onResume: () => void }) {
   const evidence = findEvidence(state, objective, index)
   const primary = evidence.find((item) => item.grade !== 'related')
   const related = evidence.find((item) => item.grade === 'related')
   const displayed = primary ?? related
-  const secondaryAll = evidence.filter((item) => item.id !== displayed?.id && (item.source !== displayed?.source || item.grade !== displayed?.grade))
-  const secondary = secondaryAll.slice(0, 6)
   const unsupported = objective.capability === 'unavailable'
   const exhausted = state?.status === 'complete' && state.completionReason === 'exhausted'
   const definitionScopeNeeded = exhausted && state.policy === 'proof' && isDefinition(theorem.kind) && state.visited.size === 1 && state.edges.length === 0 && state.rootDefinitionEdges > 0
@@ -57,8 +76,7 @@ export function QuestionCard({ objective, state, theorem, index, indexStatus, on
         <p className="answer-note">This request has no reviewed detector. Enter a full Lean declaration name or choose one of the method questions.</p>
       ) : displayed ? (
         <>
-          <EvidenceItem evidence={displayed} theorem={theorem} onInspect={(id) => onInspect(id, objective.policy ?? 'proof')} />
-          {secondary.length > 0 && <details className="secondary-evidence"><summary>Other evidence ({secondaryAll.length}{secondaryAll.length > secondary.length ? ', first 6 shown' : ''})</summary>{secondary.map((item) => <div key={item.id} className="secondary-evidence-item"><strong>{item.grade === 'lead' ? 'Possible tactic signal' : item.grade === 'related' ? 'Related signal' : 'Graph witness'}</strong><EvidenceItem evidence={item} theorem={theorem} onInspect={(id) => onInspect(id, objective.policy ?? 'proof')} /></div>)}</details>}
+          <EvidenceItem evidence={displayed} objective={objective} names={state?.names} theorem={theorem} />
           {state?.completionReason === 'witnesses' && <p className="fine-print">Exploration stopped at the first match. More paths may exist.</p>}
         </>
       ) : definitionScopeNeeded ? (
@@ -74,7 +92,6 @@ export function QuestionCard({ objective, state, theorem, index, indexStatus, on
       {!unsupported && displayed && state?.status === 'limited' && <p className="scan-state-note">Exploration reached its limit. Remaining dependencies were not checked.</p>}
       {!unsupported && displayed && state?.status === 'paused' && <div className="scan-state-note">Exploration is paused. Remaining dependencies were not checked. <button type="button" onClick={onResume}>Resume exploration</button></div>}
       {!unsupported && displayed && state?.status === 'running' && <p className="scan-state-note" role="status">Exploration continues; more dependencies remain unchecked.</p>}
-      {!unsupported && !primary && !related && !definitionScopeNeeded && state && state.visited.size > 0 && (state.edges.length > 0 || state.status !== 'running') && <button type="button" className="evidence-inspect" onClick={() => onInspect(theorem.id, objective.policy ?? 'proof')}>Inspect in graph <ArrowRight size={13} /></button>}
     </article>
   )
 }
