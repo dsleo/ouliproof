@@ -363,3 +363,9 @@ footer span:first-child { color: var(--ink); }
 .resolver-head { align-items: flex-start; }
 .resolver-close { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 28px; height: 28px; margin: -4px -8px 0 0; border: 0; background: none; color: var(--muted); }
 .resolver-close:hover { color: var(--accent); }
+
+.intro h1 { margin-bottom: 24px; }
+.intro-cta { margin-top: 36px; }
+.guide-sections section > div:first-child { padding-top: 0; }
+.guide-sections .guide-index { display: block; padding: 0 0 10px; }
+.guide-sections section > div:last-child .guide-chain { margin: 0 0 18px; }
