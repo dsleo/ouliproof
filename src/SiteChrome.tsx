@@ -6,5 +6,5 @@ export function SiteHeader() {
 }
 
 export function SiteFooter() {
-  return <footer><span>Ouliproof</span><span>Explore Mathlib dependencies with care.</span><span>Data: TheoremGraph / TheoremSearch</span></footer>
+  return <footer><span>Ouliproof</span></footer>
 }
