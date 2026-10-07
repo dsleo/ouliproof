@@ -222,6 +222,7 @@ function App() {
     if (!query.trim()) return
     const searchQuery = query.trim()
     searchController.current?.abort()
+    dismissResolver()
     explorer.current.cancel()
     setConfirmed(null)
     setIncludeDefinitions(false)
@@ -263,6 +264,7 @@ function App() {
 
   function confirm(candidate: Candidate) {
     if (candidate.loading || candidate.error) return
+    dismissResolver()
     const declaration: Declaration = { id: candidate.id, name: candidate.name, kind: candidate.kind, body: candidate.body, slogan: candidate.slogan, source: candidate.source, sourceLabel: candidate.sourceLabel }
     setConfirmed(declaration)
     setIncludeDefinitions(false)
@@ -273,6 +275,7 @@ function App() {
   }
 
   function changeResult() {
+    dismissResolver()
     explorer.current.cancel()
     setConfirmed(null)
     setIncludeDefinitions(false)

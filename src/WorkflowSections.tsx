@@ -1,4 +1,4 @@
-import type { RefObject } from 'react'
+import { useState, type RefObject } from 'react'
 import { ArrowLeft, ArrowRight, Check, LoaderCircle, Plus, Search, X } from 'lucide-react'
 import type { Candidate, Declaration, Objective, Policy } from './domain'
 import { POLICY_LABEL } from './domain'
@@ -67,17 +67,20 @@ export interface Resolver { text: string; status: 'searching' | 'ready' | 'empty
 function policyName(policy?: Policy) { return policy ? POLICY_LABEL[policy] : 'Outside the current scope' }
 
 export function QuestionSection({ objectives, draft, onDraftChange, onAdd, onRemove, onBegin, analysisStarted, resolver, onPick, onDismissResolver }: QuestionProps) {
+  const [adding, setAdding] = useState(false)
   return <section className="form-section objective-section" aria-labelledby="objective-title">
     <div className="section-label"><span>03 / QUESTION</span><span>Ask one or more</span></div>
     <h2 id="objective-title">What would you like to detect?</h2>
     <p className="section-intro">Choose methods to look for across the dependency chain, or name a result the proof should depend on, in words or as a Lean name.</p>
     <div className="suggestions" aria-label="Suggested questions">{SUGGESTIONS.map((item) => <button type="button" key={item.value} onClick={() => onAdd(item.value)}><Plus size={14} /><span>{item.label}</span><small>{item.caption}</small></button>)}</div>
-    <form className="objective-form" onSubmit={(event) => { event.preventDefault(); onAdd(draft) }}>
-      <label htmlFor="objective-input">Another question, in words or as a Lean name</label>
-      <div><input id="objective-input" value={draft} onChange={(event) => onDraftChange(event.target.value)} placeholder="e.g. uses Zorn’s lemma, or depends on Nat.zero_add" /><button type="submit" disabled={!draft.trim()} aria-label="Add question"><Plus size={18} /></button></div>
-    </form>
+    {adding || resolver
+      ? <form className="objective-form" onSubmit={(event) => { event.preventDefault(); onAdd(draft) }}>
+        <label htmlFor="objective-input">Another question</label>
+        <div><input id="objective-input" autoFocus value={draft} onChange={(event) => onDraftChange(event.target.value)} placeholder="e.g. uses Zorn’s lemma, or depends on Nat.zero_add" /><button type="submit" disabled={!draft.trim()} aria-label="Add question"><Plus size={18} /></button></div>
+      </form>
+      : <button type="button" className="add-question" onClick={() => setAdding(true)} aria-label="Add another question" title="Add another question"><Plus size={16} /></button>}
     {resolver && <div className="resolver" role="region" aria-label={`Matches for ${resolver.text}`}>
-      <div className="resolver-head"><h3>Is this the result you mean by “{resolver.text}”?</h3><button type="button" className="text-action" onClick={onDismissResolver}>Dismiss</button></div>
+      <div className="resolver-head"><h3>Is this the result you mean by “{resolver.text}”?</h3><button type="button" className="resolver-close" onClick={onDismissResolver} aria-label="Dismiss"><X size={16} /></button></div>
       {resolver.status === 'searching' && <div className="inline-state" role="status"><LoaderCircle size={16} className="spin" /> Searching for matching results…</div>}
       {resolver.status === 'empty' && <div className="inline-state">No matching results appeared. Try describing the result differently.</div>}
       {resolver.status === 'error' && <div className="inline-state error" role="alert">{resolver.error}</div>}
