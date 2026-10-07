@@ -48,7 +48,7 @@ describe('finding cards', () => {
     const path = [{ id: 'root', name: root.name }, { id: 'recursor', name: 'Nat.recAux', via: 'proof' }]
     const base = { id: 'e', category: 'induction', source: 'TheoremGraph', ruleId: 'r', matchedName: 'Nat.recAux', explanation: '', location: 'dependency', path } as const
     const objective = interpretObjective('induction')!
-    expect(storyHeadline({ ...base, grade: 'observed' }, objective)).toBe('Induction enters through Nat.recAux, 1 step down.')
+    expect(storyHeadline({ ...base, grade: 'observed' }, objective)).toBe('Induction enters through the induction principle on ℕ, 1 step down.')
     expect(storyHeadline({ ...base, grade: 'lead' }, objective)).toContain('may be used')
   })
 })

@@ -5,14 +5,23 @@ import { findEvidence, type Evidence, type MethodIndex } from './methods'
 
 function isDefinition(kind?: string) { return /^def(?:inition)?$/i.test(kind ?? '') }
 
+// ponytail: small hand-written table for the principles users meet most; the rest fall back to the slogan, then the Lean name.
+const INFORMAL_NAME: Record<string, string> = {
+  'Nat.recAux': 'the induction principle on ℕ', 'Nat.rec': 'the induction principle on ℕ', 'Nat.le_induction': 'induction starting from a base case',
+  'Classical.choice': 'the axiom of choice', 'Classical.em': 'the law of excluded middle', 'Classical.byContradiction': 'proof by contradiction',
+  'Decidable.byContradiction': 'proof by contradiction', 'Classical.byCases': 'case analysis on a statement', 'Or.elim': 'case analysis on a disjunction',
+  'propext': 'propositional extensionality', 'Quot.sound': 'quotient soundness', 'funext': 'function extensionality', 'False.elim': 'ex falso (from a contradiction, anything)',
+}
+
 const METHOD_PHRASE: Record<string, string> = { induction: 'Induction', cases: 'Case analysis', absurd: 'Proof by contradiction', choice: 'The axiom of choice' }
 
 // ponytail: one fixed sentence per grade; richer prose (per-rule wording) only if users ask.
 export function storyHeadline(evidence: Evidence, objective: Objective) {
+  const via = INFORMAL_NAME[evidence.matchedName]
   const method = objective.kind === 'named' ? `A reference to ${objective.target ?? evidence.matchedName}` : METHOD_PHRASE[objective.kind] ?? 'This method'
   const steps = evidence.path.length - 1
   const where = steps === 0 ? 'in the selected proof itself' : `${steps} ${steps === 1 ? 'step' : 'steps'} down`
-  return evidence.grade === 'observed' ? `${method} enters through ${evidence.matchedName}, ${where}.` : `${method} may be used ${where}: a recorded tactic suggests it, but the proof version is unconfirmed.`
+  return evidence.grade === 'observed' ? `${method} enters through ${via ?? evidence.matchedName}, ${where}.` : `${method} may be used ${where}: a recorded tactic suggests it, but the proof version is unconfirmed.`
 }
 
 function EvidenceItem({ evidence, objective, theorem, names }: { evidence: Evidence; objective: Objective; theorem: Declaration; names?: Map<string, Declaration> }) {
@@ -22,11 +31,18 @@ function EvidenceItem({ evidence, objective, theorem, names }: { evidence: Evide
     <p className="evidence-description">{evidence.explanation}</p>
     <ol className="path" aria-label={`Path from ${theorem.name} to ${evidence.matchedName}`}>
       {evidence.path.map((step, index) => {
-        const statement = names?.get(step.id)?.slogan ?? names?.get(step.id)?.body
+        const declaration = names?.get(step.id)
+        const informal = declaration?.slogan ?? INFORMAL_NAME[step.name]
+        const link = index > 0 && <span className="edge-type">{step.via === 'def' ? 'unfolds' : 'uses'}</span>
         return <li key={`${step.id}-${index}`}>
           <div className="story-step">
-            <span className="path-node" title={step.id}>{index > 0 && <span className="edge-type">{step.via === 'def' ? 'unfolds' : 'uses'}</span>}{step.name}</span>
-            {statement && <span className="story-statement"><MathText text={statement} /></span>}
+            {informal ? <>
+              <span className="story-informal">{link}<MathText text={informal} /></span>
+              <span className="story-lean">Lean · <code>{step.name}</code></span>
+            </> : <>
+              <span className="path-node" title={step.id}>{link}{step.name}</span>
+              {declaration?.body && <span className="story-statement">{declaration.body}</span>}
+            </>}
           </div>
         </li>
       })}

@@ -4,10 +4,10 @@ import { ApiError, TheoremGraphClient } from './api'
 import type { Candidate, Declaration, Objective, Policy, TraversalState } from './domain'
 import { Explorer } from './explorer'
 import { loadMethodIndex, type MethodIndex } from './methods'
-import { interpretObjective, objectiveKey } from './objectives'
+import { interpretObjective, namedObjective, objectiveKey, resolvableText } from './objectives'
 import { CandidateSection } from './CandidateSection'
 import { ResultsSection } from './ResultsSection'
-import { ConfirmedSection, QuestionSection, SearchSection, type SearchStatus } from './WorkflowSections'
+import { ConfirmedSection, QuestionSection, SearchSection, type Resolver, type SearchStatus } from './WorkflowSections'
 import { displayedCandidates, isLeanNameQuery } from './searchCandidates'
 import { SiteFooter, SiteHeader } from './SiteChrome'
 import './design.css'
@@ -56,7 +56,9 @@ function App() {
   const [includeDefinitions, setIncludeDefinitions] = useState(false)
   const [indexStatus, setIndexStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const [indexError, setIndexError] = useState('')
+  const [resolver, setResolver] = useState<Resolver | null>(null)
   const searchController = useRef<AbortController | null>(null)
+  const resolveController = useRef<AbortController | null>(null)
   const searchInput = useRef<HTMLInputElement>(null)
   const searchSerial = useRef(0)
   const hydrationTail = useRef<Promise<void>>(Promise.resolve())
@@ -74,7 +76,7 @@ function App() {
     window.setTimeout(() => { document.getElementById('query-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); searchInput.current?.focus({ preventScroll: true }) }, 30)
   }
 
-  useEffect(() => () => { searchController.current?.abort(); explorer.current.cancel() }, [])
+  useEffect(() => () => { searchController.current?.abort(); resolveController.current?.abort(); explorer.current.cancel() }, [])
 
   useEffect(() => {
     if (searchStatus !== 'searching') return
@@ -133,13 +135,55 @@ function App() {
     if (analysisStarted && confirmed) resetAnalysis(next)
   }
 
-  function addAndRefresh(value: string) {
-    const objective = interpretObjective(value)
-    if (!objective || objectives.some((item) => objectiveKey(item) === objectiveKey(objective))) { setDraft(''); return }
+  function addObjective(objective: Objective) {
+    if (objectives.some((item) => objectiveKey(item) === objectiveKey(objective))) { setDraft(''); return }
     const next = [...objectives, objective]
     setObjectives(next)
     setDraft('')
     if (analysisStarted && confirmed) resetAnalysis(next)
+  }
+
+  function addAndRefresh(value: string) {
+    const text = resolvableText(value)
+    if (text) { void resolve(text); return }
+    const objective = interpretObjective(value)
+    if (objective) addObjective(objective); else setDraft('')
+  }
+
+  function dismissResolver() {
+    resolveController.current?.abort()
+    setResolver(null)
+  }
+
+  // A free-text dependency is not a Lean name: find the result, let the user confirm it, then ask about it.
+  async function resolve(text: string) {
+    resolveController.current?.abort()
+    const controller = new AbortController()
+    resolveController.current = controller
+    setDraft('')
+    setResolver({ text, status: 'searching', candidates: [] })
+    try {
+      const found = (await client.search(text, controller.signal)).slice(0, 5)
+      if (controller.signal.aborted) return
+      if (!found.length) { setResolver({ text, status: 'empty', candidates: [] }); return }
+      setResolver({ text, status: 'ready', candidates: found.map((item) => ({ ...item, loading: true })) })
+      await Promise.allSettled(found.map(async (item) => {
+        let patch: Partial<Candidate>
+        try { patch = { ...(await client.neighborhood(item.id, controller.signal)).root, slogan: item.slogan, loading: false } } catch (error) { patch = { loading: false, error: formatError(error) } }
+        if (controller.signal.aborted) return
+        setResolver((current) => current?.text === text ? { ...current, candidates: current.candidates.map((candidate) => candidate.id === item.id ? { ...candidate, ...patch } : candidate) } : current)
+      }))
+    } catch (error) {
+      if (controller.signal.aborted) return
+      setResolver({ text, status: 'error', candidates: [], error: formatError(error) })
+    }
+  }
+
+  function pickResolved(candidate: Candidate) {
+    if (!resolver || candidate.loading || candidate.error) return
+    const text = resolver.text
+    setResolver(null)
+    addObjective(namedObjective(text, candidate.name))
   }
 
   async function hydrate(items: Candidate[], controller: AbortController, serial: number, exactName?: string) {
@@ -281,7 +325,8 @@ function App() {
 
     <main>
       <section className="intro" aria-labelledby="page-title">
-        <h1 id="page-title">Mathlib <em>dependency explorer.</em></h1>
+        <h1 id="page-title">Dependency <em>explorer.</em></h1>
+        <p>Describe a theorem in plain mathematics, or enter a Lean name, and see what its proof relies on.</p>
         {!searchOpen && <button type="button" className="intro-cta" onClick={openSearch}>Search a result <ArrowRight size={18} aria-hidden="true" /></button>}
       </section>
 
@@ -294,7 +339,7 @@ function App() {
 
             {confirmed && <ConfirmedSection declaration={confirmed} onChange={changeResult} />}
 
-            {confirmed && <QuestionSection objectives={objectives} draft={draft} onDraftChange={setDraft} onAdd={addAndRefresh} onRemove={removeObjective} onBegin={() => void begin()} analysisStarted={analysisStarted} />}
+            {confirmed && <QuestionSection objectives={objectives} draft={draft} onDraftChange={setDraft} onAdd={addAndRefresh} onRemove={removeObjective} onBegin={() => void begin()} analysisStarted={analysisStarted} resolver={resolver} onPick={pickResolved} onDismissResolver={dismissResolver} />}
 
             {analysisStarted && confirmed && <ResultsSection
               theorem={confirmed}

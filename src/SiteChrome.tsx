@@ -6,5 +6,5 @@ export function SiteHeader() {
 }
 
 export function SiteFooter() {
-  return <footer><span>Ouliproof</span></footer>
+  return <footer><span>Ouliproof</span><span>Dependency explorer</span></footer>
 }
