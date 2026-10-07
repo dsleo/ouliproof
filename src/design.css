@@ -159,17 +159,6 @@ code { font: .9em 'DM Mono', monospace; }
 .witness-title strong { font: 500 13px 'DM Mono', monospace; }
 .witness-title span { color: var(--muted); font-size: 12px; }
 .witness-title .lead-mark { width: 8px; height: 8px; flex: none; border: 1px solid #92794d; border-radius: 50%; background: #e8dfc8; }
-.evidence-details, .secondary-evidence { margin-top: 13px; color: #526357; font-size: 12px; }
-.evidence-details summary, .secondary-evidence summary { cursor: pointer; width: fit-content; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-.evidence-details dl { display: grid; gap: 7px; margin: 12px 0 0; padding: 12px 0; border-top: 1px solid var(--line); }
-.evidence-details dl > div { display: grid; grid-template-columns: 145px minmax(0, 1fr); gap: 12px; }
-.evidence-details dt { color: #526357; }
-.evidence-details dd { margin: 0; overflow-wrap: anywhere; color: var(--ink); }
-.secondary-evidence { border-top: 1px solid var(--line); padding-top: 14px; }
-.secondary-evidence-item { padding: 8px 0 12px; }
-.secondary-evidence-item + .secondary-evidence-item { border-top: 1px solid var(--line); }
-.secondary-evidence-item > strong { font-size: 11px; color: #526357; }
-.secondary-evidence-item .witness { margin-top: 9px; }
 .scan-state-note { margin: 15px 0 0; padding: 12px 14px; background: #f4f1e8; color: #675e42; font-size: 12px; line-height: 1.5; }
 .scan-state-note.error { background: #f9ece6; color: #8e4b32; }
 .scan-state-note button { border: 0; background: none; color: inherit; text-decoration: underline; font-weight: 700; margin-left: 4px; padding: 3px 0; }
@@ -266,16 +255,12 @@ footer span:first-child { font: 600 20px 'Newsreader', serif; color: var(--green
 .app-shell:not(.intro-only) .intro { padding-top: 35px; padding-bottom: 28px; }
 .app-shell:not(.intro-only) .intro::after { display: none; }
 .app-shell:not(.intro-only) .intro h1 { font-size: clamp(38px, 4.5vw, 55px); margin: 0; }
-.selected-details { margin-top: 15px; color: #526357; font-size: 12px; }
-.selected-details summary { cursor: pointer; font-weight: 700; min-height: 32px; }
-.selected-details .source-row { margin-top: 12px; }
 .confirmed-section { padding-bottom: 0; }
 .objective-section { margin-top: 24px; }
 @media (max-width: 790px) { .intro-only .intro { min-height: calc(100svh - 64px); } }
 @media (max-width: 540px) { .intro-only .intro h1 { font-size: clamp(47px, 13vw, 68px); } .intro-only .intro { padding-bottom: 80px; } }
 #results-title:focus { outline: 2px solid #3b7756; outline-offset: 4px; }
 @media (max-width: 600px) { .result-actions { gap: 8px; } .result-actions .secondary-button { min-height: 44px; } }
-@media (max-width: 540px) { .evidence-details dl > div { grid-template-columns: 1fr; gap: 2px; } }
 
 /* Research ledger: archival paper for reading, night ink for graph exploration. */
 body { background: var(--paper); }

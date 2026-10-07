@@ -44,7 +44,6 @@ export function ConfirmedSection({ declaration, onChange }: { declaration: Decla
     <div className="confirmed-heading"><h2 id="confirmed-title">{declaration.name}</h2><span className="check-seal"><Check size={19} /></span></div>
     {declaration.slogan && <p className="confirmed-slogan">{declaration.slogan}</p>}
     {isDefinition(declaration.kind) && <div className="declaration-kind-note"><strong>Lean definition</strong><p>This declaration is a <code>def</code>, not a theorem or lemma. Its body may contain proofs. If the proof-only scan stops here, you can choose to explore its definition dependencies.</p></div>}
-    <details className="selected-details"><summary>Declaration details</summary>{declaration.body && <p className="confirmed-statement">{declaration.body}</p>}<div className="source-row"><span>Source: {declaration.sourceLabel ?? 'TheoremGraph'}</span><span>ID: {declaration.id}</span></div></details>
   </section>
 }
 

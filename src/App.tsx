@@ -49,7 +49,6 @@ function App() {
   const [confirmed, setConfirmed] = useState<Declaration | null>(null)
   const [analysisStarted, setAnalysisStarted] = useState(false)
   const [states, setStates] = useState<Map<Policy, TraversalState>>(new Map())
-  const [graphOpen, setGraphOpen] = useState(false)
   const [searchSeconds, setSearchSeconds] = useState(0)
   const [searchNotice, setSearchNotice] = useState('')
   const [pauseRequested, setPauseRequested] = useState(false)
@@ -57,9 +56,7 @@ function App() {
   const [includeDefinitions, setIncludeDefinitions] = useState(false)
   const [indexStatus, setIndexStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const [indexError, setIndexError] = useState('')
-  const [graphFocus, setGraphFocus] = useState<{ id: string; policy: Policy; serial: number } | undefined>()
   const searchController = useRef<AbortController | null>(null)
-  const graphReturnFocus = useRef<HTMLElement | null>(null)
   const searchInput = useRef<HTMLInputElement>(null)
   const searchSerial = useRef(0)
   const hydrationTail = useRef<Promise<void>>(Promise.resolve())
@@ -127,14 +124,12 @@ function App() {
 
   function exploreDefinitions() {
     setIncludeDefinitions(true)
-    setGraphOpen(false)
     resetAnalysis(objectives, methodIndex, true)
   }
 
   function removeObjective(id: string) {
     const next = objectives.filter((item) => item.id !== id)
     setObjectives(next)
-    setGraphOpen(false)
     if (analysisStarted && confirmed) resetAnalysis(next)
   }
 
@@ -143,7 +138,6 @@ function App() {
     if (!objective || objectives.some((item) => objectiveKey(item) === objectiveKey(objective))) { setDraft(''); return }
     const next = [...objectives, objective]
     setObjectives(next)
-    setGraphOpen(false)
     setDraft('')
     if (analysisStarted && confirmed) resetAnalysis(next)
   }
@@ -188,7 +182,6 @@ function App() {
     setConfirmed(null)
     setIncludeDefinitions(false)
     setAnalysisStarted(false)
-    setGraphOpen(false)
     setStates(new Map())
     setCandidates([])
     setVisibleCandidates(5)
@@ -230,7 +223,6 @@ function App() {
     setConfirmed(declaration)
     setIncludeDefinitions(false)
     setAnalysisStarted(false)
-    setGraphOpen(false)
     setStates(new Map())
     explorer.current.cancel()
     window.setTimeout(() => document.getElementById('confirmed-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30)
@@ -241,14 +233,12 @@ function App() {
     setConfirmed(null)
     setIncludeDefinitions(false)
     setAnalysisStarted(false)
-    setGraphOpen(false)
     setStates(new Map())
   }
 
   async function begin() {
     if (!confirmed || !objectives.length) return
     setAnalysisStarted(true)
-    setGraphOpen(false)
     const needsIndex = objectives.some((item) => item.kind === 'induction' || item.kind === 'cases' || item.kind === 'absurd')
     let index = methodIndex
     if (needsIndex && !index) {
@@ -286,17 +276,6 @@ function App() {
     setPauseRequested(false)
   }
 
-  function inspect(id: string, policy: Policy) {
-    graphReturnFocus.current = document.activeElement as HTMLElement
-    setGraphOpen(true)
-    setGraphFocus({ id, policy, serial: Date.now() })
-    window.setTimeout(() => {
-      const title = document.getElementById('graph-title')
-      title?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      title?.focus({ preventScroll: true })
-    }, 30)
-  }
-
   return <div className={`app-shell ${searchOpen ? '' : 'intro-only'}`}>
     <SiteHeader />
 
@@ -327,14 +306,10 @@ function App() {
               isRunning={isRunning}
               canResume={canResume}
               pauseRequested={pauseRequested}
-              graphOpen={graphOpen}
-              graphFocus={graphFocus}
               onPause={() => { explorer.current.pause(); setPauseRequested(true) }}
               onResume={resume}
               onRetryIndex={() => void retryIndex()}
               onIncludeDefinitions={exploreDefinitions}
-              onInspect={inspect}
-              onCloseGraph={() => { setGraphOpen(false); window.setTimeout(() => graphReturnFocus.current?.focus(), 30) }}
               onContinue={(policy) => explorer.current.continueAfterWitness(policy)}
             />}
           </div>

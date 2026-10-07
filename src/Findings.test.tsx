@@ -21,16 +21,14 @@ describe('finding cards', () => {
     state.status = 'error'
     state.error = 'The API returned HTTP 503.'
     const onResume = vi.fn()
-    render(<QuestionCard objective={interpretObjective('induction')!} state={state} theorem={root} index={index} indexStatus="ready" onInspect={() => {}} onIncludeDefinitions={() => {}} onResume={onResume} />)
+    render(<QuestionCard objective={interpretObjective('induction')!} state={state} theorem={root} index={index} indexStatus="ready" onIncludeDefinitions={() => {}} onResume={onResume} />)
     expect(screen.getByText('Cross-version lead')).toBeTruthy()
-    expect(screen.getByText(index.mathlibCommit)).toBeTruthy()
-    expect(screen.getByText(root.sourceLabel!)).toBeTruthy()
     expect(screen.getByRole('alert').textContent).toContain('HTTP 503')
     fireEvent.click(screen.getByRole('button', { name: 'Resume exploration' }))
     expect(onResume).toHaveBeenCalledOnce()
   })
 
-  it('preserves the separate tactic signal behind a graph witness', () => {
+  it('shows a single graph witness without extra evidence', () => {
     const state = freshState('proof', root)
     const recursor: Declaration = { id: 'recursor', name: 'Nat.recAux', body: 'Nat.recAux (zero : motive 0) (succ : (n : Nat) → motive n → motive (n + 1)) (t : Nat) : motive t' }
     state.visited.add(root.id)
@@ -41,10 +39,9 @@ describe('finding cards', () => {
     state.edges.push({ from: root.id, to: recursor.id, type: 'proof' })
     state.status = 'complete'
     state.completionReason = 'witnesses'
-    render(<QuestionCard objective={interpretObjective('induction')!} state={state} theorem={root} index={index} indexStatus="ready" onInspect={() => {}} onIncludeDefinitions={() => {}} onResume={() => {}} />)
+    render(<QuestionCard objective={interpretObjective('induction')!} state={state} theorem={root} index={index} indexStatus="ready" onIncludeDefinitions={() => {}} onResume={() => {}} />)
     expect(screen.getByText('Graph witness')).toBeTruthy()
-    expect(screen.getByText('Other evidence (1)')).toBeTruthy()
-    expect(screen.getByText('Possible tactic signal')).toBeTruthy()
+    expect(screen.queryByText(/Other evidence/)).toBeNull()
   })
 
   it('leads with a one-sentence answer, hedged for tactic leads', () => {
