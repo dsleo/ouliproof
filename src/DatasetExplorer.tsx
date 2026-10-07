@@ -5,8 +5,6 @@ import { SiteHeader } from './SiteChrome'
 import './design.css'
 import './dataset.css'
 
-type SourceStats = { kind: 'informal' | 'formal'; dataset: string; count: number }
-type Stats = { sources: SourceStats[]; total: number }
 type Item = { id: string; kind: 'informal' | 'formal'; dataset: string; title: string | null; statement: string; n_proofs: number }
 type Listing = { items: Item[]; total: number; page: number; page_size: number }
 type InformalProof = { proof_id: string; text: string; content_type: string; origin: string; source_url: string | null; technique?: string | null; method_cluster?: { id: string; name: string; defining_approach: string }; method_fingerprint?: { primary_approach: string | null; secondary_techniques: string[] } }
@@ -84,13 +82,10 @@ function StatementProofs({ row, visibleCount, setVisibleCount, openProof, setOpe
 
 export default function DatasetExplorer() {
   const initialId = new URLSearchParams(window.location.search).get('id')
-  const [stats, setStats] = useState<Stats | null>(null)
-  const [statsError, setStatsError] = useState('')
   const [positionError, setPositionError] = useState('')
   const [retryTick, setRetryTick] = useState(0)
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
-  const [dataset, setDataset] = useState('all')
   const [page, setPage] = useState(pageFromUrl)
   const [deepLinkId, setDeepLinkId] = useState(initialId)
   const [findingPosition, setFindingPosition] = useState(Boolean(initialId))
@@ -105,15 +100,10 @@ export default function DatasetExplorer() {
 
   useEffect(() => { const timer = window.setTimeout(() => setDebouncedQuery(query), 220); return () => window.clearTimeout(timer) }, [query])
   useEffect(() => {
-    if (!statsError && !listError && !positionError) return
+    if (!listError && !positionError) return
     const timer = window.setTimeout(() => setRetryTick((value) => value + 1), 3000)
     return () => window.clearTimeout(timer)
-  }, [statsError, listError, positionError, retryTick])
-  useEffect(() => {
-    const controller = new AbortController()
-    getJson<Stats>('/seed-api/stats', controller.signal).then((value) => { setStats(value); setStatsError('') }).catch((error) => { if (!controller.signal.aborted) setStatsError(errorText(error)) })
-    return () => controller.abort()
-  }, [retryTick])
+  }, [listError, positionError, retryTick])
   useEffect(() => {
     if (!deepLinkId) { setFindingPosition(false); return }
     const controller = new AbortController()
@@ -125,11 +115,11 @@ export default function DatasetExplorer() {
   }, [deepLinkId, retryTick])
   useEffect(() => {
     const controller = new AbortController()
-    const params = new URLSearchParams({ q: debouncedQuery, kind: 'all', dataset, page: String(page) })
+    const params = new URLSearchParams({ q: debouncedQuery, kind: 'all', page: String(page) })
     setListing(null); setListError('')
     getJson<Listing>(`/seed-api/items?${params}`, controller.signal).then((value) => { setListing(value); setListError('') }).catch((error) => { if (!controller.signal.aborted) setListError(errorText(error)) })
     return () => controller.abort()
-  }, [debouncedQuery, dataset, page, retryTick])
+  }, [debouncedQuery, page, retryTick])
   const item = findingPosition || positionError || listing?.page !== page ? null : listing?.items[0] ?? null
   useEffect(() => {
     if (!item || !statementOpen || (item.kind !== 'formal' && !proofsOpen)) { setDetail(null); return }
@@ -155,7 +145,7 @@ export default function DatasetExplorer() {
     url.searchParams.delete('id'); url.searchParams.set('page', String(nextPage))
     window.history.pushState(null, '', url)
   }
-  function resetSearchAndSource() {
+  function resetSearch() {
     resetOpen(); setPositionError(''); setFindingPosition(false); setDeepLinkId(null); setPage(1)
     const url = new URL(window.location.href)
     url.searchParams.delete('id'); url.searchParams.delete('page')
@@ -165,11 +155,10 @@ export default function DatasetExplorer() {
   const showingDetail = detail?.id === item?.id ? detail : null
 
   return <div className="dataset-page"><SiteHeader /><main className="collection-main">
-    <header className="collection-intro"><p className="collection-eyebrow">Oulipoof / seed collection</p><h1>Proof collection</h1><p className="collection-intro-copy">How can the same statement be proved in different ways? This collection is for studying proof diversity and the techniques used across human and AI solutions, in both informal explanations and formal Lean code.</p><p className="collection-intro-copy collection-intro-sources">It is built from the Hugging Face datasets <a href={sourcePages.ProofRank} target="_blank" rel="noreferrer">ProofRank</a>, <a href={sourcePages['proofwiki-math']} target="_blank" rel="noreferrer">ProofWiki Math</a>, <a href={sourcePages['Nemotron-Math-Proofs-v2']} target="_blank" rel="noreferrer">Nemotron Math Proofs v2</a>, and <a href={sourcePages['NuminaMath-LEAN-Proof-Artifacts']} target="_blank" rel="noreferrer">NuminaMath Lean Proof Artifacts</a>.</p></header>
-    {(statsError || listError || positionError) && <div className="collection-offline" role="alert"><strong>Collection unavailable.</strong> Reconnecting… <small>{statsError || listError || positionError}</small></div>}
+    <header className="collection-intro"><p className="collection-eyebrow">Oulipoof / seed collection</p><h1>Proof collection</h1><p className="collection-intro-copy">How can the same statement be proved in different ways? This collection is for studying proof diversity and the techniques used across human and AI solutions, in both informal explanations and formal Lean code.</p><p className="collection-intro-copy collection-intro-sources">It is build from <a href={sourcePages.ProofRank} target="_blank" rel="noreferrer">ProofRank</a>, <a href={sourcePages['proofwiki-math']} target="_blank" rel="noreferrer">ProofWiki Math</a>, <a href={sourcePages['Nemotron-Math-Proofs-v2']} target="_blank" rel="noreferrer">Nemotron Math Proofs v2</a>, and <a href={sourcePages['NuminaMath-LEAN-Proof-Artifacts']} target="_blank" rel="noreferrer">NuminaMath Lean Proof Artifacts</a>.</p></header>
+    {(listError || positionError) && <div className="collection-offline" role="alert"><strong>Collection unavailable.</strong> Reconnecting… <small>{listError || positionError}</small></div>}
     <section className="collection-controls" aria-label="Collection filters">
-      <label className="collection-search"><Search size={17} /><span className="sr-only">Search statements</span><input value={query} onChange={(event) => { resetSearchAndSource(); setQuery(event.target.value) }} placeholder="Search statements, Lean names, or IDs" /></label>
-      <label className="collection-source-filter"><span>Source</span><select value={dataset} onChange={(event) => { resetSearchAndSource(); setDataset(event.target.value) }}><option value="all">All sources</option>{stats?.sources.map((source) => <option key={source.dataset} value={source.dataset}>{sourceName(source.dataset)} · {source.count.toLocaleString()}</option>)}</select></label>
+      <label className="collection-search"><Search size={17} /><span className="sr-only">Search statements</span><input value={query} onChange={(event) => { resetSearch(); setQuery(event.target.value) }} placeholder="Search statements, Lean names,..." /></label>
     </section>
     <nav className="collection-pagination collection-pagination-top" aria-label="Browse statements"><button type="button" aria-label="Previous statement" disabled={page <= 1 || !listing || findingPosition} onClick={() => navigate(page - 1)}>←</button><span>{listing?.total ? `${page.toLocaleString()} / ${listing.total.toLocaleString()}` : '—'}</span><button type="button" aria-label="Next statement" disabled={page >= totalPages || !listing || findingPosition} onClick={() => navigate(page + 1)}>→</button></nav>
     <section className="collection-list" aria-label="Statement" aria-live="polite">
