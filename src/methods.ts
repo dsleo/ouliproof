@@ -106,7 +106,7 @@ function evidenceForNode(state: TraversalState, objective: Objective, id: string
   const tokens = marker?.matches[objective.kind]
   if (!tokens?.length || !compatibleKind(declaration.kind, marker.kind)) return found
   const graphVersion = state.rootSourceLabel
-  const joinStatus: JoinStatus = graphVersion === 'Mathlib_v428' ? 'unverified' : 'different-version'
+  const joinStatus: JoinStatus = !graphVersion || graphVersion === 'Mathlib_v428' ? 'unverified' : 'different-version'
   for (const token of tokens) {
     const isSecondary = (objective.kind === 'cases' && token === 'rcases') || (objective.kind === 'absurd' && ['exfalso', 'absurd'].includes(token))
     found.push({ id: `tactic:${objective.kind}:${id}:${token}`, category: objective.kind, grade: isSecondary ? 'related' : 'lead', source: 'MathlibGraph', ruleId: `exact-tactic:${token}`, matchedName: declaration.name, matchedToken: token, explanation: isSecondary ? `${token} is related to this question but does not by itself establish the specific method.` : `MathlibGraph records the ${token} tactic for this declaration name. Proof-version identity with TheoremGraph is unverified.`, joinStatus, sourceRevision: index.mathlibCommit, graphSourceLabel: graphVersion, location: location(path), path })

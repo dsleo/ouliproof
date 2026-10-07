@@ -114,7 +114,8 @@ export function normalizeNeighborhood(value: unknown, expectedId: string): Neigh
     const from = string(edge?.src_id)
     const to = string(edge?.dep_id)
     const type = string(edge?.edge_type)
-    if (from === expectedId && to && type) {
+    if (from === expectedId) {
+      if (!to || !type) throw new ApiError('The TheoremGraph response contains an incomplete dependency for this declaration.')
       if (!nodes.has(to)) throw new ApiError(`The response omits the name of a dependency (${to}).`)
       outgoing.push({ from, to, type })
     }
@@ -135,7 +136,7 @@ export class TheoremGraphClient {
   }
 
   async search(query: string, signal?: AbortSignal): Promise<Candidate[]> {
-    const params = new URLSearchParams({ query, n_results: '24', formality: 'formal' })
+    const params = new URLSearchParams({ query, n_results: '48', formality: 'formal' })
     const value = object(await getJson(`/graph/embedding?${params}`, signal, 90000))
     if (!Array.isArray(value?.results)) throw new ApiError('The TheoremGraph search response format has changed.')
     const found = new Map<string, Candidate>()
@@ -145,9 +146,9 @@ export class TheoremGraphClient {
       const sourceLabel = string(row?.external_id) ?? string(row?.title)
       if (!id || !UUID.test(id) || !sourceLabel || !/^Mathlib/i.test(sourceLabel) || found.has(id)) continue
       found.set(id, { id, name: string(row?.name) ?? 'Declaration', body: string(row?.body), slogan: string(row?.slogan), source: safeSourceUrl(row?.source), sourceLabel, score: typeof row?.score === 'number' ? row.score : 0, loading: true })
-      if (found.size === 10) break
+      if (found.size === 20) break
     }
-    return Array.from(found.values())
+    return Array.from(found.values()).sort((a, b) => Number(b.name === query) - Number(a.name === query))
   }
 
   async neighborhood(id: string, signal?: AbortSignal): Promise<Neighborhood> {

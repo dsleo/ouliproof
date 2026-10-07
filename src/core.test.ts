@@ -86,6 +86,8 @@ describe('voisinage TheoremGraph', () => {
     expect(parsed.root.sourceLabel).toBe('Mathlib_v427')
     expect(parsed.nodes.get(IDS.em)?.body).toBe('Classical.em (p : Prop) : p ∨ ¬p')
     expect(() => normalizeNeighborhood({ ...raw, nodes: [] }, IDS.em)).toThrow(/omits the name/)
+    expect(() => normalizeNeighborhood({ ...raw, edges: [{ src_id: IDS.em, dep_id: IDS.spec }] }, IDS.em)).toThrow(/incomplete dependency/)
+    expect(() => normalizeNeighborhood({ ...raw, edges: [{ src_id: IDS.em, edge_type: 'proof' }] }, IDS.em)).toThrow(/incomplete dependency/)
   })
 })
 

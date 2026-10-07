@@ -40,6 +40,8 @@ describe('method evidence', () => {
     expect(findEvidence(root, objective, index)[0]).toMatchObject({ source: 'MathlibGraph', location: 'root', grade: 'lead', joinStatus: 'different-version' })
     const indirect = state('Other', 'Submodule.pow_toAddSubmonoid', 'Mathlib_v428')
     expect(findEvidence(indirect, objective, index)[0]).toMatchObject({ matchedToken: 'induction', location: 'dependency', joinStatus: 'unverified' })
+    const unlabelled = state('Other', 'Submodule.pow_toAddSubmonoid', '')
+    expect(findEvidence(unlabelled, objective, index)[0]).toMatchObject({ joinStatus: 'unverified', graphSourceLabel: '' })
   })
   it('keeps ex falso and destructuring as related evidence rather than satisfying stronger questions', () => {
     const absurd = interpretObjective('proof by contradiction')!

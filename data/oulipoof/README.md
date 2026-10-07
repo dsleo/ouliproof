@@ -13,7 +13,8 @@ The pinned build has 9,962 statement records:
 | Informal | 6,384 | Two or more proof texts for one statement |
 | Formal Lean | 3,578 | A human Lean proof and a prover Lean proof for one problem |
 
-The informal track combines 119 ProofRank problems, 1,606 ProofWiki theorems, and 4,659 Nemotron problems. The ProofWiki texts are published community material. The Nemotron proofs are synthetic model-generated candidates; every retained Nemotron proof is marked `synthetic` in the collection. The formal track consists of human/prover pairs from NuminaMath Lean Proof Artifacts, both marked valid by the source under Lean 4.15.0. Pinned revisions and input hashes are in [`manifest.json`](manifest.json).
+The informal track combines 119 ProofRank problems, 1,606 ProofWiki theorems, and 4,659 Nemotron problems. The Nemotron proofs are synthetic model-generated candidates. 
+The formal track consists of human/prover pairs from NuminaMath Lean Proof Artifacts.
 
 There are two different levels of diversity in the data:
 

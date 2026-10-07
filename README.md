@@ -26,9 +26,9 @@ The [Vercel configuration](vercel.json) rewrites API requests, the guide route, 
 
 1. Search for a Lean name or describe a mathematical result. TheoremGraph returns semantic matches, so confirm the exact declaration before continuing.
 2. Ask one or more questions. Select induction, case analysis, proof by contradiction, or enter a Lean name such as `depends on Nat.zero_add`.
-3. Inspect each exact graph witness or possible recorded-tactic signal and its dependency path. Pause or resume the traversal, and open the graph to explore the finding. A shared URL still requires declaration confirmation.
+3. Inspect each exact graph witness or possible recorded-tactic signal and its dependency path. Open **Evidence details** for the source, rule, tactic token, and available revision labels. Pause or resume the traversal, and open the graph to explore the finding. A link with an `id` and `detect` query still requires declaration confirmation.
 
-The first five candidate names are loaded initially. You can show five more on demand. Neighborhood responses supply the Lean names because search results may use a generic name.
+TheoremGraph offers semantic search, not a documented exact Lean-name endpoint. Ouliproof retains up to 20 Mathlib candidates from 48 formal search results. For natural-language queries, it loads the first five candidate names and loads more on demand. For a Lean-style name, it checks returned names in small batches until it finds an exact match or exhausts those candidates, and promotes a match to the top. A name that is absent from this semantic result set cannot be found by this workflow; try describing the mathematics instead. Neighborhood responses supply the Lean names because search results may use a generic name.
 
 Each neighborhood is processed as it arrives. Once every selected question has a graph-backed witness, pending concurrent requests are cancelled; their nodes remain available if you continue exploring. A cross-source tactic lead alone does not stop the search. A found witness does not mean the entire dependency closure was visited. Even an exhausted traversal cannot establish the absence of a reasoning method, because the detector catalog and source metadata are incomplete.
 
@@ -54,7 +54,8 @@ Validated neighborhoods are cached in memory and IndexedDB for one hour, with at
 - [src/methods.ts](src/methods.ts): exact graph rules, tactic metadata, version-aware evidence, and source attribution.
 - [scripts/build_method_index.py](scripts/build_method_index.py): pinned, reproducible compact index builder.
 - [src/explorer.ts](src/explorer.ts): layer-by-layer traversal, distinct policies, paths, cancellation, and budgets.
-- [src/App.tsx](src/App.tsx): search, confirmation, questions, results, and sharing.
+- [src/App.tsx](src/App.tsx): workflow state and traversal coordination.
+- [src/WorkflowSections.tsx](src/WorkflowSections.tsx), [src/CandidateSection.tsx](src/CandidateSection.tsx), [src/ResultsSection.tsx](src/ResultsSection.tsx), and [src/Findings.tsx](src/Findings.tsx): search, candidate confirmation, questions, and evidence presentation.
 - [src/GraphExplorer.tsx](src/GraphExplorer.tsx): navigable graph, node details, and list view.
 - [src/HowItWorks.tsx](src/HowItWorks.tsx): standalone interpretation guide.
 

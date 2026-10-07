@@ -6,7 +6,7 @@ The results below describe the current TheoremGraph graph snapshot and detector 
 
 | # | Open and confirm | Ask | Expected observation |
 | --- | --- | --- | --- |
-| 1 | [`Submodule.pow_toAddSubmonoid`](http://127.0.0.1:5187/?id=f7861071-9a2b-4b77-a637-d1abb314430c&detect=induction) | Induction | `Graph witness`: direct `proof` edge to `Nat.recAux`, with a verified successor induction-hypothesis argument. A MathlibGraph `induction` record is separately labelled a cross-version lead. The graph highlights the path. |
+| 1 | [`Submodule.pow_toAddSubmonoid`](http://127.0.0.1:5187/?id=f7861071-9a2b-4b77-a637-d1abb314430c&detect=induction) | Induction | `Graph witness`: direct `proof` edge to `Nat.recAux`, with a verified successor induction-hypothesis argument. A MathlibGraph `induction` record appears under Other evidence as a possible tactic signal. Evidence details show its token and both version labels. The graph highlights the path. |
 | 2 | [`Submodule.pow_toAddSubmonoid`](http://127.0.0.1:5187/?id=f7861071-9a2b-4b77-a637-d1abb314430c&detect=case%20analysis) | Case analysis | `Graph witness`: direct `proof` edge to `Nat.casesAuxOn`, whose signature has zero and successor branches. MathlibGraph's `cases` record remains a separate lead. |
 | 3 | [`Nat.add_eq_zero`](http://127.0.0.1:5187/?id=66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8&detect=proof%20by%20contradiction) | Proof by contradiction | `Graph witness`: exact `Decidable.byContradiction` reference. The copy must not claim that the author wrote `by_contra`. |
 | 4 | [`Submonoid.closure_irreducible`](http://127.0.0.1:5187/?id=063505ea-5719-4ed7-9f0e-1c5005e08728&detect=proof%20by%20contradiction) | Proof by contradiction | Direct graph witness and separate MathlibGraph `by_contra` lead. `False.elim` is related ex falso evidence, not independently a contradiction witness. |
@@ -23,5 +23,6 @@ The results below describe the current TheoremGraph graph snapshot and detector 
 3. Request `/tg/graph/statement/66b1e8d2-0ca6-4d33-bea6-e1463dc26ff8?direction=src&formality=formal` through the preview host. Expect HTTP 200 JSON; inspect `x-vercel-cache` on two identical requests to verify the configured CDN behavior. Request `/tg/graph/embedding` with a mathematical query and verify the semantic search flow.
 4. Simulate a failed `/method-markers.json` request and a failed or rate-limited `/tg` request. The UI should show incomplete evidence or an API error, not `No marker observed` as a definitive answer.
 5. At a 390 px viewport, verify that the page has no horizontal document scroll and that the graph can still be panned or switched to list view.
+6. Search `Nat.add_comm` by exact name. Verify that a matching declaration is promoted once its neighborhood loads, that the selected declaration still requires confirmation, and that any incomplete name check is described accurately.
 
 The checked [validation report](method-validation.md) has the source audit, broader mathematical probes, and known scientific limits. Automated unit and traversal tests run with `npm test`; the production bundle runs with `npm run build`.
