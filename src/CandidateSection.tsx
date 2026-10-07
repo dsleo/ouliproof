@@ -17,7 +17,7 @@ export function CandidateCard({ candidate, index, exactMatch, onConfirm }: { can
     {index !== undefined && <div className="candidate-index">{String(index).padStart(2, '0')}</div>}
     <div className="candidate-body">
       {exactMatch && <span className="candidate-exact">Exact name match</span>}
-      {candidate.loading ? <h3>Loading…</h3> : candidate.slogan ? <h3 className="candidate-statement"><MathText text={candidate.slogan} /></h3> : <h3>{candidate.name}</h3>}
+      {candidate.slogan ? <h3 className="candidate-statement"><MathText text={candidate.slogan} /></h3> : <h3>{candidate.loading ? 'Loading…' : candidate.name}</h3>}
       {!candidate.loading && candidate.slogan && <p className="candidate-lean"><span>Lean</span> <code>{candidate.name}</code></p>}
       {candidate.body && <p className="formal-body">{candidate.body}</p>}
       {candidate.error && <p className="candidate-error">Statement unavailable: {candidate.error}</p>}
