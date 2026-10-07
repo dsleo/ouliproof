@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { QuestionCard } from './Findings'
+import { QuestionCard, storyHeadline } from './Findings'
 import { freshState } from './explorer'
 import { interpretObjective } from './objectives'
 import type { MethodIndex } from './methods'
@@ -45,5 +45,13 @@ describe('finding cards', () => {
     expect(screen.getByText('Graph witness')).toBeTruthy()
     expect(screen.getByText('Other evidence (1)')).toBeTruthy()
     expect(screen.getByText('Possible tactic signal')).toBeTruthy()
+  })
+
+  it('leads with a one-sentence answer, hedged for tactic leads', () => {
+    const path = [{ id: 'root', name: root.name }, { id: 'recursor', name: 'Nat.recAux', via: 'proof' }]
+    const base = { id: 'e', category: 'induction', source: 'TheoremGraph', ruleId: 'r', matchedName: 'Nat.recAux', explanation: '', location: 'dependency', path } as const
+    const objective = interpretObjective('induction')!
+    expect(storyHeadline({ ...base, grade: 'observed' }, objective)).toBe('Induction enters through Nat.recAux, 1 step down.')
+    expect(storyHeadline({ ...base, grade: 'lead' }, objective)).toContain('may be used')
   })
 })

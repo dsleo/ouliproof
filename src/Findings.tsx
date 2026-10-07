@@ -1,21 +1,38 @@
 import { ArrowRight, Check, LoaderCircle } from 'lucide-react'
 import type { Declaration, Objective, Policy, TraversalState } from './domain'
+import { MathText } from './MathText'
 import { findEvidence, type Evidence, type MethodIndex } from './methods'
 
 function isDefinition(kind?: string) { return /^def(?:inition)?$/i.test(kind ?? '') }
 
-function EvidenceItem({ evidence, theorem, onInspect }: { evidence: Evidence; theorem: Declaration; onInspect: (id: string) => void }) {
+const METHOD_PHRASE: Record<string, string> = { induction: 'Induction', cases: 'Case analysis', absurd: 'Proof by contradiction', choice: 'The axiom of choice' }
+
+// ponytail: one fixed sentence per grade; richer prose (per-rule wording) only if users ask.
+export function storyHeadline(evidence: Evidence, objective: Objective) {
+  const method = objective.kind === 'named' ? `A reference to ${objective.target ?? evidence.matchedName}` : METHOD_PHRASE[objective.kind] ?? 'This method'
+  const steps = evidence.path.length - 1
+  const where = steps === 0 ? 'in the selected proof itself' : `${steps} ${steps === 1 ? 'step' : 'steps'} down`
+  return evidence.grade === 'observed' ? `${method} enters through ${evidence.matchedName}, ${where}.` : `${method} may be used ${where}: a recorded tactic suggests it, but the proof version is unconfirmed.`
+}
+
+function EvidenceItem({ evidence, objective, theorem, names, onInspect }: { evidence: Evidence; objective: Objective; theorem: Declaration; names?: Map<string, Declaration>; onInspect: (id: string) => void }) {
   return <div className={`witness evidence-${evidence.grade}`}>
+    <p className="story-headline">{storyHeadline(evidence, objective)}</p>
     <div className="witness-title">{evidence.grade === 'observed' ? <Check size={16} aria-hidden="true" /> : <span className="lead-mark" aria-hidden="true" />}<strong>{evidence.matchedName}</strong><span>{evidence.path.length - 1} {evidence.path.length === 2 ? 'edge' : 'edges'} · {evidence.location === 'root' ? 'selected proof' : evidence.location === 'definition' ? 'reached definition' : 'proof dependency'}</span></div>
     <p className="evidence-description">{evidence.explanation}</p>
     <ol className="path" aria-label={`Path from ${theorem.name} to ${evidence.matchedName}`}>
-      {evidence.path.map((step, index) => <li key={`${step.id}-${index}`}>
-        {index > 0 && <span className="edge-type">{step.via}</span>}
-        <span className="path-node" title={step.id}>{step.name}</span>
-      </li>)}
+      {evidence.path.map((step, index) => {
+        const statement = names?.get(step.id)?.slogan ?? names?.get(step.id)?.body
+        return <li key={`${step.id}-${index}`}>
+          <div className="story-step">
+            <span className="path-node" title={step.id}>{index > 0 && <span className="edge-type">{step.via === 'def' ? 'unfolds' : 'uses'}</span>}{step.name}</span>
+            {statement && <span className="story-statement"><MathText text={statement} /></span>}
+          </div>
+        </li>
+      })}
     </ol>
     <details className="evidence-details">
-      <summary>Evidence details</summary>
+      <summary>Provenance</summary>
       <dl>
         <div><dt>Source</dt><dd>{evidence.source}</dd></div>
         {evidence.matchedToken && <div><dt>Recorded tactic</dt><dd><code>{evidence.matchedToken}</code></dd></div>}
@@ -57,8 +74,8 @@ export function QuestionCard({ objective, state, theorem, index, indexStatus, on
         <p className="answer-note">This request has no reviewed detector. Enter a full Lean declaration name or choose one of the method questions.</p>
       ) : displayed ? (
         <>
-          <EvidenceItem evidence={displayed} theorem={theorem} onInspect={(id) => onInspect(id, objective.policy ?? 'proof')} />
-          {secondary.length > 0 && <details className="secondary-evidence"><summary>Other evidence ({secondaryAll.length}{secondaryAll.length > secondary.length ? ', first 6 shown' : ''})</summary>{secondary.map((item) => <div key={item.id} className="secondary-evidence-item"><strong>{item.grade === 'lead' ? 'Possible tactic signal' : item.grade === 'related' ? 'Related signal' : 'Graph witness'}</strong><EvidenceItem evidence={item} theorem={theorem} onInspect={(id) => onInspect(id, objective.policy ?? 'proof')} /></div>)}</details>}
+          <EvidenceItem evidence={displayed} objective={objective} names={state?.names} theorem={theorem} onInspect={(id) => onInspect(id, objective.policy ?? 'proof')} />
+          {secondary.length > 0 && <details className="secondary-evidence"><summary>Other evidence ({secondaryAll.length}{secondaryAll.length > secondary.length ? ', first 6 shown' : ''})</summary>{secondary.map((item) => <div key={item.id} className="secondary-evidence-item"><strong>{item.grade === 'lead' ? 'Possible tactic signal' : item.grade === 'related' ? 'Related signal' : 'Graph witness'}</strong><EvidenceItem evidence={item} objective={objective} names={state?.names} theorem={theorem} onInspect={(id) => onInspect(id, objective.policy ?? 'proof')} /></div>)}</details>}
           {state?.completionReason === 'witnesses' && <p className="fine-print">Exploration stopped at the first match. More paths may exist.</p>}
         </>
       ) : definitionScopeNeeded ? (
