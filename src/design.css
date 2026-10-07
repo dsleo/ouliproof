@@ -1,13 +1,22 @@
+@font-face { font-family: 'CMU Serif'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/cmu-serif.woff2') format('woff2'); }
+@font-face { font-family: 'CMU Sans'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/cmu-sans.woff2') format('woff2'); }
+@font-face { font-family: 'CMU Typewriter'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/cmu-typewriter.woff2') format('woff2'); }
+
 :root {
-  font-family: 'DM Sans', sans-serif;
-  color: #25332d;
-  background: #f7f5ee;
+  font-family: 'CMU Sans', sans-serif;
+  color: #282522;
+  background: #f2efe7;
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
-  --ink: #25332d;
-  --green: #285b45;
-  --muted: #526357;
-  --line: #deded2;
+  --ink: #282522;
+  --green: #2d2926;
+  --muted: #6e665d;
+  --line: #cbc2b4;
+  --accent: #ae6b1f;
+  --accent-wash: #f1e3c8;
+  --paper: #f2efe7;
+  --paper-light: #faf7f0;
+  --night: #11100f;
   --max: 1350px;
 }
 * { box-sizing: border-box; }
@@ -267,3 +276,77 @@ footer span:first-child { font: 600 20px 'Newsreader', serif; color: var(--green
 #results-title:focus { outline: 2px solid #3b7756; outline-offset: 4px; }
 @media (max-width: 600px) { .result-actions { gap: 8px; } .result-actions .secondary-button { min-height: 44px; } }
 @media (max-width: 540px) { .evidence-details dl > div { grid-template-columns: 1fr; gap: 2px; } }
+
+/* Research ledger: archival paper for reading, night ink for graph exploration. */
+body { background: var(--paper); }
+code, .candidate-index, .candidate h3, .candidate-body .formal-body, .candidate-body small, .confirmed-heading h2, .confirmed-statement, .source-row, .witness-title strong, .path-node, .edge-type { font-family: 'CMU Typewriter', monospace; }
+::selection { background: #e6c892; color: #241f19; }
+:focus-visible { outline-color: var(--accent); }
+
+.site-header { border-color: #a99d8c; }
+.brand, .brand-mark, .form-section h2, .candidate-section h2, .confirmed-section h2, .results h2, .answer-head h3, .guide-intro h1, .guide-sections h2, footer span:first-child { font-family: 'CMU Serif', serif; }
+.brand { font-weight: 400; letter-spacing: -.015em; }
+.brand-mark { border-radius: 0; width: 30px; height: 30px; background: var(--night); color: #f7f2e7; font-family: 'CMU Serif', serif; }
+.brand-mark span { color: #e4ad57; }
+.site-header nav { color: #625b54; font-family: 'CMU Sans', sans-serif; font-size: 11px; letter-spacing: .09em; }
+.site-header nav a[aria-current='page'] { color: var(--accent); text-decoration-color: var(--accent); }
+
+.intro::after { content: '∴'; color: #ded5c7; font-family: 'CMU Serif', serif; }
+.intro-kicker { color: var(--accent); letter-spacing: .15em; }
+.intro-kicker .line { background: var(--accent); }
+.intro h1, .guide-intro h1 { font-family: 'CMU Serif', serif; letter-spacing: -.035em; }
+.intro h1 em { color: var(--accent); }
+.intro > p, .guide-intro > p:not(.intro-kicker) { font-family: 'CMU Serif', serif; color: #4d4640; }
+.workspace { background: var(--paper-light); border-color: #bcb1a2; }
+.section-label, .section-label span:last-child, .eyebrow { color: #756c62; letter-spacing: .12em; }
+.section-intro, .candidate-body p, .confirmed-slogan, .answer-note, .guide-sections p { color: #5a5149; }
+.form-section h2, .candidate-section h2, .confirmed-section h2, .results h2, .answer-head h3 { letter-spacing: -.02em; }
+
+.search-form { border-color: #81776a; background: #fffdf8; box-shadow: 4px 4px 0 #d8cdbd; }
+.search-form:focus-within { outline-color: var(--accent); }
+.search-form > svg, .example-line button, .objective-form button, .text-action, .candidate-exact, .capability { color: var(--accent); }
+.search-form button, .primary-button, .guide-cta, .intro-cta { background: var(--night); border-color: var(--night); color: #fdf9ef; font-family: 'CMU Sans', sans-serif; }
+.search-form button:hover:not(:disabled), .primary-button:hover:not(:disabled), .guide-cta:hover, .intro-cta:hover { background: var(--accent); border-color: var(--accent); }
+.example-line button { border-bottom-color: #c79555; }
+.example-line button:hover { background: var(--accent-wash); }
+.suggestions button { background: transparent; border-color: #cfc5b7; }
+.suggestions button:hover { border-color: var(--accent); background: #fbf3e5; }
+.suggestions svg { color: var(--accent); }
+.suggestions span { color: var(--ink); }
+.objective-form > div { border-color: #81776a; }
+.objective-form > div:focus-within { border-color: var(--accent); box-shadow: 0 1px 0 var(--accent); }
+.selected-questions h3 span { background: var(--accent-wash); color: #754411; }
+.capability.no { color: #897355; }
+
+.candidate h3, .confirmed-heading h2 { color: var(--ink); }
+.candidate-select, .candidate-more, .secondary-button { border-color: #9d9181; color: var(--ink); }
+.candidate-select:hover:not(:disabled), .candidate-more:hover, .secondary-button:hover { background: var(--accent-wash); }
+.check-seal { border-color: var(--accent); color: var(--accent); border-radius: 0; }
+.confirmed-statement { background: #eee8dc; color: #3c3630; border-left: 3px solid var(--accent); }
+.declaration-kind-note strong { color: var(--accent); }
+
+.answer-card { background: #fffdf8; border-color: #bdb2a3; box-shadow: 3px 3px 0 #e1d8ca; }
+.status-pill { border-radius: 0; }
+.status-pill.positive { color: #6e4010; background: var(--accent-wash); }
+.status-pill.pending { color: #6a5938; background: #eee7d7; }
+.status-pill.muted, .status-pill.neutral { color: #665f57; background: #eeeae2; }
+.status-pill.negative { color: #8d3e2b; background: #f6e5df; }
+.evidence-lead { background: #f8efdf; border-left: 3px solid var(--accent); }
+.evidence-related { background: #f1ede5; }
+.evidence-inspect, .witness-title { color: var(--accent); }
+.evidence-inspect:hover { color: #6d3c10; }
+.witness-title .lead-mark { border-color: #8f5516; background: #e5b96e; border-radius: 0; }
+.path li + li::before { background: #b7aa99; }
+.path li::after { border-color: #9d8e7b; background: #fffdf8; border-radius: 0; }
+.path li:last-child::after { background: var(--accent); }
+.path-node { color: #403830; }
+
+footer { border-color: #a99d8c; }
+footer span:first-child { color: var(--ink); }
+.guide-chain { color: #513514; background: #f4e8d1; border-left: 3px solid var(--accent); }
+.guide-source a { color: var(--accent); }
+
+@media (max-width: 540px) {
+  .search-form { box-shadow: 2px 2px 0 #d8cdbd; }
+  .answer-card { box-shadow: 2px 2px 0 #e1d8ca; }
+}
