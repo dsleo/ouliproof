@@ -19,7 +19,7 @@ export default function HowItWorks() {
       <div className="guide-sections">
         <section>
           <span className="guide-index">01 / READ A FINDING</span>
-          <div><h2>What counts as evidence?</h2><p>We inspect the selected theorem and the lemmas it relies on.</p><div className="guide-chain"><span>Selected theorem</span><span>→</span><span>Referenced lemma</span><span>→</span><span>Method signal</span></div><p>MathlibGraph’s tactic labels are useful hints, but they may describe a slightly different version of a proof from the one used here. Some names, such as <code>False.elim</code> and <code>rcases</code>, can appear in many proof approaches, so they are not enough on their own to identify a method.</p></div>
+          <div><h2>What counts as evidence?</h2><p>We inspect the selected theorem and the lemmas it relies on.</p><div className="guide-chain"><span>Selected theorem</span><span>→</span><span>Referenced lemma</span><span>→</span><span>Method signal</span></div><p>Tactic labels from MathlibGraph provide extra context, but do not by themselves establish a proof strategy.</p></div>
         </section>
         <section>
           <span className="guide-index">02 / KNOW THE LIMIT</span>
