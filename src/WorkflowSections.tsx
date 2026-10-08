@@ -24,7 +24,7 @@ export function SearchSection({ query, onQueryChange, onSearch, onCancel, inputR
   return <section className="form-section" aria-labelledby="query-title">
     <div className="section-label"><span>01 / SEARCH</span><span>In words or as a Lean name</span></div>
     <h2 id="query-title">Result of interest</h2>
-    <p className="section-intro">Describe a result in your own words, or enter a Lean name. You will confirm the exact statement before exploring it.</p>
+    <p className="section-intro">Describe a result in your own words. You will confirm the exact statement before exploring it.</p>
     <form className="search-form" onSubmit={(event) => { event.preventDefault(); onSearch() }}>
       <Search size={19} aria-hidden="true" />
       <input ref={inputRef} aria-label="Lean name or mathematical description" value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="e.g. a prime dividing a product, or Nat.add_comm" />

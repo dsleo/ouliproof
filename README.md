@@ -25,7 +25,7 @@ The [Vercel configuration](vercel.json) rewrites API requests, the guide route, 
 ## Use the app
 
 1. Search for a Lean name or describe a mathematical result. TheoremGraph returns semantic matches, so confirm the exact declaration before continuing.
-2. Ask one or more questions. Select induction, case analysis, proof by contradiction, or enter a Lean name such as `depends on Nat.zero_add`.
+2. Ask one or more questions. Select induction, case analysis, proof by contradiction, or a dependency question such as `depends on Nat.zero_add`.
 3. Inspect each exact graph witness or possible recorded-tactic signal and its dependency path. Open **Evidence details** for the source, rule, tactic token, and available revision labels. Pause or resume the traversal, and open the graph to explore the finding. A link with an `id` and `detect` query still requires declaration confirmation.
 
 TheoremGraph offers semantic search, not a documented exact Lean-name endpoint. Ouliproof retains up to 20 Mathlib candidates from 48 formal search results. For natural-language queries, it loads the first five candidate names and loads more on demand. For a Lean-style name, it checks returned names in small batches until it finds an exact match or exhausts those candidates, and promotes a match to the top. A name that is absent from this semantic result set cannot be found by this workflow; try describing the mathematics instead. Neighborhood responses supply the Lean names because search results may use a generic name.

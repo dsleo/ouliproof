@@ -329,7 +329,7 @@ function App() {
     <main>
       <section className="intro" aria-labelledby="page-title">
         <h1 id="page-title">Dependency <em>explorer.</em></h1>
-        <p>Describe a theorem in plain mathematics, or enter a Lean name, and see what its proof relies on.</p>
+        <p>Describe a theorem in plain mathematics and see what its proof relies on.</p>
         {!searchOpen && <button type="button" className="intro-cta" onClick={openSearch}>Search a result <ArrowRight size={18} aria-hidden="true" /></button>}
       </section>
 
