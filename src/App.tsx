@@ -329,8 +329,8 @@ function App() {
     <main>
       <section className="intro" aria-labelledby="page-title">
         <h1 id="page-title">Leanage <em>explorer.</em></h1>
-        <p>Describe a theorem in plain mathematics and see what its proof relies on.</p>
-        {!searchOpen && <button type="button" className="intro-cta" onClick={openSearch}>Search a result <ArrowRight size={18} aria-hidden="true" /></button>}
+        <p>Describe a theorem and see what its proof relies on.</p>
+        {!searchOpen && <button type="button" className="intro-cta" onClick={openSearch}>Explore a theorem <span className="intro-cta-arrow"><ArrowRight size={16} aria-hidden="true" /></span></button>}
       </section>
 
       {searchOpen && <section className="workspace" aria-label="Theorem analysis">

@@ -271,8 +271,14 @@ code, .candidate-index, .candidate h3, .candidate-body .formal-body, .candidate-
 .site-header { border-color: #a99d8c; }
 .brand, .brand-mark, .form-section h2, .candidate-section h2, .confirmed-section h2, .results h2, .answer-head h3, .guide-intro h1, .guide-sections h2, footer span:first-child { font-family: 'CMU Serif', serif; }
 .brand { font-weight: 400; letter-spacing: -.015em; }
-.brand-mark { border-radius: 0; width: 30px; height: 30px; background: var(--night); color: #f7f2e7; font-family: 'CMU Serif', serif; }
-.brand-mark span { color: #e4ad57; }
+.brand-mark { width: 34px; height: 34px; flex: none; overflow: visible; background: none; color: inherit; border: 0; border-radius: 0; padding: 0; }
+.lineage-branch, .lineage-route { stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.lineage-branch { stroke: #62594f; }
+.lineage-route { stroke: var(--accent); stroke-width: 2.2; }
+.lineage-root, .lineage-leaf { fill: var(--paper); stroke: #62594f; stroke-width: 1.7; }
+.lineage-root { fill: #62594f; }
+.lineage-junction { fill: var(--paper); stroke: #62594f; stroke-width: 1.7; }
+.lineage-leaf-selected { fill: var(--accent); stroke: var(--paper); stroke-width: 1.2; }
 .site-header nav { color: #625b54; font-family: 'CMU Sans', sans-serif; font-size: 11px; letter-spacing: .09em; }
 .site-header nav a[aria-current='page'] { color: var(--accent); text-decoration-color: var(--accent); }
 
@@ -290,8 +296,12 @@ code, .candidate-index, .candidate h3, .candidate-body .formal-body, .candidate-
 .search-form { border-color: #81776a; background: #fffdf8; box-shadow: 4px 4px 0 #d8cdbd; }
 .search-form:focus-within { outline-color: var(--accent); }
 .search-form > svg, .example-line button, .objective-form button, .text-action, .candidate-exact, .capability { color: var(--accent); }
-.search-form button, .primary-button, .guide-cta, .intro-cta { background: var(--night); border-color: var(--night); color: #fdf9ef; font-family: 'CMU Sans', sans-serif; }
-.search-form button:hover:not(:disabled), .primary-button:hover:not(:disabled), .guide-cta:hover, .intro-cta:hover { background: var(--accent); border-color: var(--accent); }
+.search-form button, .primary-button, .guide-cta { background: var(--night); border-color: var(--night); color: #fdf9ef; font-family: 'CMU Sans', sans-serif; }
+.search-form button:hover:not(:disabled), .primary-button:hover:not(:disabled), .guide-cta:hover { background: var(--accent); border-color: var(--accent); }
+.intro-cta { min-height: 52px; display: inline-flex; align-items: center; gap: 25px; margin-top: 36px; padding: 5px 7px 5px 17px; border: 1px solid #bcae99; background: #f8f4ec; color: #302b25; font: 600 13px 'CMU Sans', sans-serif; transition: border-color .22s ease, background-color .22s ease, box-shadow .22s ease; }
+.intro-cta:hover { border-color: var(--accent); background: #fbf3e5; box-shadow: 2px 2px 0 #e6d6bc; }
+.intro-cta-arrow { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid #d2c3a9; background: #f1e3c8; color: #754411; transition: transform .28s cubic-bezier(.2,.75,.25,1), background-color .22s ease; }
+.intro-cta:hover .intro-cta-arrow { transform: translateX(2px); background: #ead3a9; }
 .example-line button { border-bottom-color: #c79555; }
 .example-line button:hover { background: var(--accent-wash); }
 .suggestions button { background: transparent; border-color: #cfc5b7; }
@@ -365,7 +375,6 @@ footer span:first-child { color: var(--ink); }
 .resolver-close:hover { color: var(--accent); }
 
 .intro h1 { margin-bottom: 24px; }
-.intro-cta { margin-top: 36px; }
 .guide-sections section > div:first-child { padding-top: 0; }
 .guide-sections .guide-index { display: block; padding: 0 0 10px; }
 .guide-sections section > div:last-child .guide-chain { margin: 0 0 18px; }
