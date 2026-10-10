@@ -1,15 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "functions": {
-    "api/seed-api/[route].ts": {
-      "includeFiles": "api/collection-index.json"
-    }
-  },
   "rewrites": [
-    { "source": "/seed-api/:path*", "destination": "/api/seed-api/:path*" },
     { "source": "/how-it-works", "destination": "/index.html" },
-    { "source": "/dataset", "destination": "/index.html" },
     { "source": "/principle", "destination": "/index.html" },
     { "source": "/tg/graph/embedding", "destination": "https://api.theoremsearch.com/graph/embedding" },
     { "source": "/tg/graph/statement/:id", "destination": "https://api.theoremsearch.com/graph/statement/:id" }

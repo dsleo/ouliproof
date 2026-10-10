@@ -5,8 +5,5 @@ dist/
 .DS_Store
 __pycache__/
 *.pyc
-data/oulipoof/*.jsonl
-data/oulipoof/.staging/
-data/oulipoof/.seed-index.sqlite*
 .vercel
 .env*

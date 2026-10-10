@@ -1,10 +1,10 @@
 export function SiteHeader() {
   return <header className="site-header">
-    <a className="brand" href="/" aria-label="Ouliproof home"><span className="brand-mark">O<span>·</span></span><span>Ouliproof</span></a>
-    <nav aria-label="Main navigation"><a href="/how-it-works" aria-current={window.location.pathname === '/how-it-works' ? 'page' : undefined}>How it works</a><a href="/dataset" aria-current={window.location.pathname === '/dataset' ? 'page' : undefined}>Proof collection</a></nav>
+    <a className="brand" href="/" aria-label="Leanage home"><span className="brand-mark">L<span>·</span></span><span>Leanage</span></a>
+    <nav aria-label="Main navigation"><a href="/how-it-works" aria-current={window.location.pathname === '/how-it-works' ? 'page' : undefined}>How it works</a></nav>
   </header>
 }
 
 export function SiteFooter() {
-  return <footer><span>Ouliproof</span><span>Dependency explorer</span></footer>
+  return <footer><span>Leanage</span><span>Mathlib dependency explorer · an Ouliproof project</span></footer>
 }

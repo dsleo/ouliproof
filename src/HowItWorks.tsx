@@ -6,7 +6,7 @@ import './design.css'
 import './styles.css'
 
 export default function HowItWorks() {
-  useEffect(() => { document.title = 'How it works — Ouliproof' }, [])
+  useEffect(() => { document.title = 'How it works — Leanage' }, [])
   return <div className="app-shell">
     <SiteHeader />
     <main className="guide-page">

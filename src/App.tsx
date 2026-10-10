@@ -33,7 +33,7 @@ function formatError(error: unknown) {
 }
 
 function debug(event: string, details: Record<string, unknown>) {
-  console.debug(`[Ouliproof] ${event}`, details)
+  console.debug(`[Leanage] ${event}`, details)
 }
 
 function App() {
@@ -328,7 +328,7 @@ function App() {
 
     <main>
       <section className="intro" aria-labelledby="page-title">
-        <h1 id="page-title">Dependency <em>explorer.</em></h1>
+        <h1 id="page-title">Leanage <em>explorer.</em></h1>
         <p>Describe a theorem in plain mathematics and see what its proof relies on.</p>
         {!searchOpen && <button type="button" className="intro-cta" onClick={openSearch}>Search a result <ArrowRight size={18} aria-hidden="true" /></button>}
       </section>
