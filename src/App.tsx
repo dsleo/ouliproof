@@ -57,6 +57,7 @@ function App() {
   const [indexStatus, setIndexStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const [indexError, setIndexError] = useState('')
   const [resolver, setResolver] = useState<Resolver | null>(null)
+  const [linkCopied, setLinkCopied] = useState(false)
   const searchController = useRef<AbortController | null>(null)
   const resolveController = useRef<AbortController | null>(null)
   const searchInput = useRef<HTMLInputElement>(null)
@@ -77,6 +78,13 @@ function App() {
   }
 
   useEffect(() => () => { searchController.current?.abort(); resolveController.current?.abort(); explorer.current.cancel() }, [])
+
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (confirmed?.id) url.searchParams.set('id', confirmed.id)
+    else if (searchStatus === 'ready') url.searchParams.delete('id')
+    window.history.replaceState(null, '', url)
+  }, [confirmed?.id, searchStatus])
 
   useEffect(() => {
     if (searchStatus !== 'searching') return
@@ -104,6 +112,8 @@ function App() {
     searchController.current = controller
     void client.neighborhood(id, controller.signal).then(({ root }) => {
       if (!live || controller.signal.aborted) return
+      const declaration: Declaration = { id: root.id, name: root.name, kind: root.kind, body: root.body, slogan: root.slogan, source: root.source, sourceLabel: root.sourceLabel }
+      setConfirmed(declaration)
       setCandidates([{ ...root, score: 0, loading: false }])
       setSearchStatus('ready')
     }).catch((error) => {
@@ -274,6 +284,20 @@ function App() {
     window.setTimeout(() => document.getElementById('confirmed-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30)
   }
 
+  async function copyDeclarationLink() {
+    if (!confirmed) return
+    const url = new URL(window.location.href)
+    url.search = ''
+    url.searchParams.set('id', confirmed.id)
+    try {
+      await navigator.clipboard.writeText(url.toString())
+      setLinkCopied(true)
+      window.setTimeout(() => setLinkCopied(false), 1800)
+    } catch {
+      setLinkCopied(false)
+    }
+  }
+
   function changeResult() {
     dismissResolver()
     explorer.current.cancel()
@@ -340,7 +364,7 @@ function App() {
 
             {searchStatus === 'ready' && !confirmed && <CandidateSection candidates={candidates} visible={visibleResults} visibleCount={visibleCandidates} query={searchedQuery} onConfirm={confirm} onShowMore={showMoreCandidates} />}
 
-            {confirmed && <ConfirmedSection declaration={confirmed} onChange={changeResult} />}
+            {confirmed && <ConfirmedSection declaration={confirmed} onChange={changeResult} onCopyLink={() => void copyDeclarationLink()} linkCopied={linkCopied} />}
 
             {confirmed && <QuestionSection objectives={objectives} draft={draft} onDraftChange={setDraft} onAdd={addAndRefresh} onRemove={removeObjective} onBegin={() => void begin()} analysisStarted={analysisStarted} resolver={resolver} onPick={pickResolved} onDismissResolver={dismissResolver} />}
 

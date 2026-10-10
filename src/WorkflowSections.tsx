@@ -1,5 +1,5 @@
 import { useState, type RefObject } from 'react'
-import { ArrowLeft, ArrowRight, Check, LoaderCircle, Plus, Search, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Copy, LoaderCircle, Plus, Search, X } from 'lucide-react'
 import type { Candidate, Declaration, Objective, Policy } from './domain'
 import { POLICY_LABEL } from './domain'
 import { MathText } from './MathText'
@@ -40,9 +40,9 @@ export function SearchSection({ query, onQueryChange, onSearch, onCancel, inputR
 
 function isDefinition(kind?: string) { return /^def(?:inition)?$/i.test(kind ?? '') }
 
-export function ConfirmedSection({ declaration, onChange }: { declaration: Declaration; onChange: () => void }) {
+export function ConfirmedSection({ declaration, onChange, onCopyLink, linkCopied }: { declaration: Declaration; onChange: () => void; onCopyLink: () => void; linkCopied: boolean }) {
   return <section className="confirmed-section" aria-labelledby="confirmed-title">
-    <div className="section-label"><span>02 / SELECTED RESULT</span><button type="button" className="text-action" onClick={onChange}><ArrowLeft size={14} /> Change result</button></div>
+    <div className="section-label"><span>02 / SELECTED RESULT</span><div className="confirmed-actions"><button type="button" className="text-action" onClick={onCopyLink} aria-live="polite">{linkCopied ? <Check size={14} /> : <Copy size={14} />}{linkCopied ? 'Link copied' : 'Copy link'}</button><button type="button" className="text-action" onClick={onChange}><ArrowLeft size={14} /> Change result</button></div></div>
     <div className="confirmed-heading"><h2 id="confirmed-title" className={declaration.slogan ? 'confirmed-statement-title' : undefined}>{declaration.slogan ? <MathText text={declaration.slogan} /> : declaration.name}</h2><span className="check-seal"><Check size={19} /></span></div>
     {declaration.slogan && <p className="candidate-lean"><span>Lean</span> <code>{declaration.name}</code></p>}
     {isDefinition(declaration.kind) && <div className="declaration-kind-note"><strong>This is a definition, not a theorem</strong><p>Its body may contain proofs. If the proof-only scan stops here, you can choose to explore its definition dependencies.</p></div>}
