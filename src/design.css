@@ -289,7 +289,8 @@ code, .candidate-index, .candidate h3, .candidate-body .formal-body, .candidate-
 .intro h1, .guide-intro h1 { font-family: 'CMU Serif', serif; letter-spacing: -.035em; }
 .intro h1 em { color: var(--accent); }
 .intro > p, .guide-intro > p:not(.intro-kicker) { font-family: 'CMU Serif', serif; color: #4d4640; }
-.workspace { background: var(--paper-light); border-color: #bcb1a2; }
+.app-shell { min-height: 100vh; background-image: linear-gradient(rgba(242, 239, 231, .22), rgba(242, 239, 231, .22)), url('/leanage-landscape.webp'); background-size: cover; background-position: center top; background-repeat: no-repeat; background-attachment: fixed; }
+.workspace { background: rgba(250, 247, 240, .76); border-color: #bcb1a2; }
 .section-label, .section-label span:last-child, .eyebrow { color: #756c62; letter-spacing: .12em; }
 .section-intro, .candidate-body p, .confirmed-slogan, .answer-note, .guide-sections p { color: #5a5149; }
 .form-section h2, .candidate-section h2, .confirmed-section h2, .results h2, .answer-head h3 { letter-spacing: -.02em; }
